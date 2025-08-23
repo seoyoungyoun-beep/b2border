@@ -1,11 +1,11 @@
 # ABLE B2B 주문폼 (자체 페이지) — HTML + Google Apps Script (싱글오리진 드롭다운, 슬랙 연동)
 
-- 품목 리스트: 제공해주신 스프레드시트 반영
-- 싱글 오리진: **200g / 1kg 드롭다운 선택 + 제품명 직접 입력 가능**
-- 안내문: 상단에 안내사항 2줄 반영
-- 알림메일은 제외, 대신 슬랙 Webhook 호출 코드 추가
-- 질문 흐름은 “매장 이름 → 제품명·수량 → 연락처” 순으로 간소화
-- 마지막에 주문 요약을 **카카오톡 알림톡 대신, 우선 슬랙 Webhook 메시지**로 전송 (추후 알림톡은 카카오 API 연동 필요)
+* 품목 리스트: 제공해주신 스프레드시트 반영
+* 싱글 오리진: **200g / 1kg 드롭다운 선택 + 제품명 직접 입력 가능**
+* 안내문: 상단에 안내사항 2줄 반영
+* 알림메일은 제외, 대신 슬랙 Webhook 호출 코드 추가
+* 질문 흐름은 “매장 이름 → 제품명·수량 → 연락처” 순으로 간소화
+* 마지막에 주문 요약을 **카카오톡 알림톡 대신, 우선 슬랙 Webhook 메시지**로 전송 (추후 알림톡은 카카오 API 연동 필요)
 
 ---
 
@@ -226,9 +226,3 @@ function jsonResponse(obj,status){
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON).setResponseCode(status||200);
 }
 ```
-
----
-
-👉 이 상태에서 **슬랙 Webhook URL**만 교체하면, 주문 시 자동으로 시트에 기록되고 슬랙 알림이 옵니다.  
-카카오 알림톡은 별도 API 연동이 필요해서, 차후 원하면 카카오 BizMessage API 붙이는 방법도 안내드릴 수 있어요.
-
