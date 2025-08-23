@@ -24,7 +24,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>ABLE COFFEE GROUP — B2B 주문서</h1>
+    <h1>[빈브라더스] 도매 파트너 주문서 </h1>
     <div class="sub">평일 오전 10시까지 주문시 당일 출고됩니다. 나머지 주문 건들은 익일 출고됩니다. 긴급 출고 요청 시, 카톡문의 혹은 전화 주세요. (010 8767 4709)</div>
 <label>매장 이름</label>
 <input id="company" placeholder="예) 강남점 / 홍대점" />
@@ -33,18 +33,32 @@
 <label>주문 품목</label>
 <table id="itemsTable">
 <thead>
-<tr><th>제품명</th><th>규격</th><th>수량</th><th></th></tr>
+<tr><th>제품명</th><th>규격</th><th>수량</th><th>삭제</th></tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
+
+
+<div class="row-actions">
+<div class="left">
 <button id="addRow" class="btn">+ 품목 추가</button>
+</div>
+<div class="right">
+<button id="submitBtn" class="btn btn-primary">주문 제출</button>
+</div>
+</div>
+
+
+<label>연락처</label>
+<input id="phone" placeholder="010-1234-5678" />
+</div>
+</div>
 
 
 <label>연락처</label>
 <input id="phone" placeholder="010-1234-5678" />
 
 
-<button id="submitBtn" class="btn btn-primary">주문 제출</button>
 <div id="msg"></div>
 
 <script>
