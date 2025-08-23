@@ -1,39 +1,59 @@
 <!doctype html>
-
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>[빈브라더스] 도매 파트너 주문서</title>
   <style>
-    body {font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Helvetica, Arial, sans-serif; margin: 0; background:#fafafa; color:#111;}
-    .container {max-width: 720px; margin: 24px auto; padding: 24px; background:#fff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.06);} 
-    h1 {margin: 0 0 8px; font-size: 22px}
-    .sub {color:#444; margin-bottom: 20px; white-space: pre-line; font-size:14px; line-height:1.5}
-    label {font-size: 14px; color:#333; display:block; margin:12px 0 6px}
-    input, select {width: 100%; padding: 10px 12px; border:1px solid #ddd; border-radius: 10px; font-size: 14px}
-    input[type="number"] {text-align: right}
-    table {width: 100%; border-collapse: collapse; margin-top:6px}
-    th, td {padding: 10px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: middle}
-    th {background:#fafafa; font-weight: 600}
+    :root { --gap: 12px; --radius: 12px; }
+    html, body { height: 100%; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Helvetica, Arial, sans-serif;
+      margin: 0; background:#fafafa; color:#111; -webkit-font-smoothing:antialiased;
+    }
+    .container {
+      max-width: 720px; margin: 24px auto; padding: 24px;
+      background:#fff; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    }
+    h1 { margin: 0 0 8px; font-size: 22px }
+    .sub { color:#444; margin-bottom: 20px; white-space: pre-line; font-size:14px; line-height:1.6 }
+    label { font-size: 14px; color:#333; display:block; margin: 14px 0 6px }
+    input, select {
+      width: 100%; padding: 12px 14px; border:1px solid #ddd; border-radius: var(--radius); font-size: 15px;
+    }
+    input[type="number"] { text-align: right }
+    .muted { color:#666; font-size: 13px }
+    .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; min-width: 540px; }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; font-size: 14px; vertical-align: middle }
+    th { background:#fafafa; font-weight: 600 }
     #itemsTable th:nth-child(4), #itemsTable td:nth-child(4) { text-align:center; width: 84px; }
-    .btn {appearance:none; border:none; border-radius: 10px; padding: 10px 14px; cursor:pointer; font-weight:600;}
-    .btn-primary {background:#111; color:#fff}
-    .btn-danger {background:#ffe3e3; color:#c92a2a; padding:6px 10px}
-    .row-actions { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-top: 16px; }
-    .row-actions .left { display:flex; gap:8px; align-items:center; }
-    .row-actions .right { margin-left:auto; }
-    .success {background:#e6fcf5; color:#087f5b; padding:12px 14px; border-radius:10px; margin-top:12px}
-    .error {background:#fff5f5; color:#c92a2a; padding:12px 14px; border-radius:10px; margin-top:12px}
+    .btn {
+      appearance:none; border:none; border-radius: var(--radius);
+      padding: 12px 16px; cursor:pointer; font-weight:600; font-size: 15px;
+    }
+    .btn-primary { background:#111; color:#fff }
+    .btn-secondary { background:#f1f3f5; color:#111 }
+    .btn-danger { background:#ffe3e3; color:#c92a2a; padding: 8px 12px }
+    .row-actions { display:flex; gap:var(--gap); align-items:center; justify-content:space-between; margin-top: 14px; }
+    .row-actions .left { display:flex; gap:8px; align-items:center }
+    .row-actions .right { margin-left:auto }
+    .success, .error {
+      padding: 12px 14px; border-radius: var(--radius); margin-top: 12px; font-size:14px; line-height:1.5;
+    }
+    .success { background:#e6fcf5; color:#087f5b }
+    .error { background:#fff5f5; color:#c92a2a }
 
-
-@media (max-width: 520px){
-  .row-actions{flex-direction:column; align-items:stretch}
-  .row-actions .right{margin-left:0}
-  .row-actions .left .btn, .row-actions .right .btn{width:100%}
-}
-
-
+    /* 모바일 최적화 */
+    @media (max-width: 640px){
+      .container { margin: 12px auto; padding: 16px }
+      h1 { font-size: 20px }
+      .btn { width: 100% }                 /* 터치 친화 버튼 */
+      .row-actions { flex-direction: column; align-items: stretch }
+      .row-actions .right { margin-left: 0 }
+      input, select { padding: 12px 14px; font-size: 16px } /* iOS 확대 방지 */
+      th, td { padding: 10px; font-size: 14px }
+    }
   </style>
 </head>
 <body>
@@ -42,37 +62,42 @@
     <div class="sub">- 평일 오전 10시까지 주문시 당일 출고됩니다. 나머지 주문 건들은 익일 출고됩니다.
 - 긴급 출고 요청 시, 카톡문의 혹은 전화 주세요. (010 8767 4709)</div>
 
-```
-<label>매장 이름</label>
-<input id="company" placeholder="예) 강남점 / 홍대점" />
+    <label for="company">매장 이름</label>
+    <input id="company" placeholder="예) 강남점 / 홍대점" />
 
-<label>주문 품목</label>
-<table id="itemsTable">
-  <thead>
-    <tr><th>제품명</th><th>규격</th><th>수량</th><th>삭제</th></tr>
-  </thead>
-  <tbody id="tbody"></tbody>
-</table>
+    <label>주문 품목</label>
+    <div class="table-wrap">
+      <table id="itemsTable">
+        <thead>
+          <tr><th>제품명</th><th>규격</th><th>수량</th><th>삭제</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
 
-<div class="row-actions">
-  <div class="left">
-    <button id="addRow" class="btn">+ 품목 추가</button>
-  </div>
-  <div class="right">
-    <button id="submitBtn" class="btn btn-primary">주문 제출</button>
-  </div>
-</div>
+    <!-- 품목 추가 버튼 줄 -->
+    <div class="row-actions" style="margin-top: 10px">
+      <div class="left">
+        <button id="addRow" class="btn btn-secondary">+ 품목 추가</button>
+      </div>
+      <div class="right">
+        <span class="muted" id="totalQtyText">총 수량: 0개</span>
+      </div>
+    </div>
 
-<label>연락처</label>
-<input id="phone" placeholder="010-1234-5678" />
+    <!-- 요청: 전화번호 입력 → 제출 버튼 순서 -->
+    <label for="phone">연락처</label>
+    <input id="phone" type="tel" inputmode="tel" placeholder="010-1234-5678" />
 
-<div id="msg"></div>
+    <div style="margin-top: 12px">
+      <button id="submitBtn" class="btn btn-primary">주문 제출</button>
+    </div>
 
-
+    <div id="msg"></div>
   </div>
 
 <script>
-// ===== 설정 =====
+/* ===== 설정 ===== */
 const ITEMS = [
   "[원두] 블랙수트_1kg",
   "[원두] 벨벳화이트_1kg",
@@ -90,25 +115,29 @@ const ITEMS = [
   "[기타] 싱글 오리진_(제품명 변경)"
 ];
 const SIZES = ["1kg", "1L", "500ml", "235ml"];
-const SINGLE_SIZES = ["200g","1kg"];
-
-// ⚠️ Apps Script 웹앱 URL(exec) 붙여넣기
+const SINGLE_SIZES = ["200g","1kg"]; // 싱글오리진 전용
+/* https://script.google.com/macros/s/AKfycbx3gmJwOgh3h75ljUxhGPjG59Dt-i5rzPbD4nCIKKsUCW1wkCQ7bCQV6uERLyhkQHeK2g/exec */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx3gmJwOgh3h75ljUxhGPjG59Dt-i5rzPbD4nCIKKsUCW1wkCQ7bCQV6uERLyhkQHeK2g/exec";
 
-// ===== DOM =====
+/* ===== DOM ===== */
 const tbody = document.getElementById('tbody');
 const addRowBtn = document.getElementById('addRow');
 const submitBtn = document.getElementById('submitBtn');
+const totalQtyText = document.getElementById('totalQtyText');
 
 function makeSelect(options){
   const s=document.createElement('select');
-  options.forEach(o=>{const op=document.createElement('option'); op.value=o; op.textContent=o; s.appendChild(op);});
+  options.forEach(o=>{
+    const op=document.createElement('option');
+    op.value=o; op.textContent=o; s.appendChild(op);
+  });
   return s;
 }
 
 function addRow(){
   const tr=document.createElement('tr');
 
+  // 제품명
   const tdItem=document.createElement('td');
   const selItem=makeSelect(ITEMS);
   const customName=document.createElement('input');
@@ -118,26 +147,31 @@ function addRow(){
   tdItem.appendChild(selItem);
   tdItem.appendChild(customName);
 
+  // 규격
   const tdSize=document.createElement('td');
   const selSize=makeSelect(SIZES);
   selSize.disabled=true;
   tdSize.appendChild(selSize);
 
+  // 수량
   const tdQty=document.createElement('td');
   const qty=document.createElement('input');
   qty.type='number'; qty.min='1'; qty.placeholder='0';
+  qty.addEventListener('input', updateTotal);
   tdQty.appendChild(qty);
 
+  // 삭제
   const tdDel=document.createElement('td');
   const del=document.createElement('button');
   del.textContent='삭제';
   del.className='btn btn-danger';
-  del.onclick=()=>{ tr.remove(); };
+  del.onclick=()=>{ tr.remove(); updateTotal(); };
   tdDel.appendChild(del);
 
   tr.appendChild(tdItem); tr.appendChild(tdSize); tr.appendChild(tdQty); tr.appendChild(tdDel);
   tbody.appendChild(tr);
 
+  // 규격 추론 (라벨의 _1kg 등)
   function inferSize(label){
     const m=label.match(/_(\d+(?:kg|ml|L))$/)||label.match(/(\d+(?:kg|ml|L))$/);
     return m?m[1]:'';
@@ -159,11 +193,22 @@ function addRow(){
   }
   selItem.addEventListener('change',handleItemChange);
   handleItemChange();
+  updateTotal();
+}
+
+function updateTotal(){
+  let total=0;
+  [...tbody.querySelectorAll('input[type="number"]')].forEach(i=>{
+    const v=parseInt(i.value||'0',10);
+    if(!isNaN(v) && v>0) total += v;
+  });
+  totalQtyText.textContent = `총 수량: ${total}개`;
 }
 
 addRowBtn.onclick=addRow;
 addRow();
 
+/* ===== 제출 ===== */
 async function submitOrder(){
   const msgEl=document.getElementById('msg');
   msgEl.innerHTML='';
@@ -189,23 +234,34 @@ async function submitOrder(){
 
   const payload={company, phone, items};
   try{
-    const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const data=await res.json();
-    if(data.ok){
+    const res=await fetch(WEB_APP_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();              // 디버그 친화
+    if(!res.ok){ showError(`요청 실패 (HTTP ${res.status})\n${text}`); return; }
+    let data=null; try{ data=JSON.parse(text); }catch(_){}
+    if(data && data.ok){
       showSuccess(`주문이 접수되었습니다. 주문번호: ${data.orderId}`);
       document.getElementById('company').value='';
       document.getElementById('phone').value='';
-      tbody.innerHTML=''; addRow();
-    } else {showError('오류: '+(data.message||'서버 오류'))}
-  }catch(e){showError('네트워크 오류');}
-  finally{submitBtn.disabled=false; submitBtn.textContent='주문 제출';}
+      tbody.innerHTML=''; addRow(); updateTotal();
+    } else {
+      showError(`응답 형식 오류\n${text}`);
+    }
+  }catch(e){
+    showError(`네트워크/브라우저 오류\n${e && e.message ? e.message : e}`);
+  } finally {
+    submitBtn.disabled=false; submitBtn.textContent='주문 제출';
+  }
 }
 
+/* ===== 메시지 ===== */
 function showSuccess(t){document.getElementById('msg').innerHTML=`<div class='success'>${t}</div>`;}
 function showError(t){document.getElementById('msg').innerHTML=`<div class='error'>${t}</div>`;}
 
 document.getElementById('submitBtn').onclick=submitOrder;
 </script>
-
 </body>
 </html>
