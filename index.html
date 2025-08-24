@@ -132,4 +132,102 @@ document.addEventListener('DOMContentLoaded', () => {
   function addRow(){
     const tr=document.createElement('tr');
 
-    // 1)
+    // 1) 제품명 (드롭다운 + 싱글오리진 커스텀 입력)
+    const tdItem=document.createElement('td');
+    tdItem.className='item-cell';
+    const selItem=makeSelect(ITEMS);
+    const custom=document.createElement('input'); custom.placeholder='싱글 오리진 제품명'; custom.className='item-custom';
+    tdItem.append(selItem, custom);
+
+    // 2) 수량
+    const tdQty=document.createElement('td');
+    const qty=document.createElement('input'); qty.type='number'; qty.min='1'; qty.placeholder='0';
+    qty.addEventListener('input', updateTotal);
+    tdQty.appendChild(qty);
+
+    // 3) 삭제
+    const tdDel=document.createElement('td');
+    const del=document.createElement('button'); del.textContent='삭제'; del.className='btn btn-danger';
+    tdDel.appendChild(del);
+
+    tr.append(tdItem, tdQty, tdDel);
+    tbody.appendChild(tr);
+
+    function handleChange(){
+      if(selItem.value.includes('싱글 오리진')){
+        custom.style.display='block';
+      } else {
+        custom.style.display='none';
+      }
+    }
+    selItem.addEventListener('change', handleChange);
+    handleChange();
+    updateTotal();
+  }
+
+  function updateTotal(){
+    let t=0;
+    [...tbody.querySelectorAll('input[type="number"]')].forEach(i=>{
+      const v=parseInt(i.value||'0',10); if(v>0) t+=v;
+    });
+    totalQtyText.textContent = `총 수량: ${t}개`;
+  }
+
+  // 이벤트 위임: 동적으로 추가된 버튼도 동작
+  document.addEventListener('click', (e)=>{
+    const add = e.target.closest('#addRow');
+    if(add){ e.preventDefault(); addRow(); }
+    const del = e.target.closest('.btn-danger');
+    if(del){ e.preventDefault(); const tr=del.closest('tr'); if(tr) tr.remove(); updateTotal(); }
+  });
+
+  // 첫 행
+  addRow();
+
+  async function submitOrder(){
+    const company=document.getElementById('company').value.trim();
+    const phone=document.getElementById('phone').value.trim();
+    if(!company||!phone){showError('매장명과 연락처를 입력해주세요.');return;}
+
+    const items=[];
+    [...tbody.querySelectorAll('tr')].forEach(r=>{
+      const base=r.children[0].querySelector('select').value;
+      const custom=r.children[0].querySelector('input.item-custom');
+      const qty=parseInt(r.children[1].querySelector('input').value||'0',10);
+      if(qty>0){
+        const name=base.includes('싱글 오리진')?(custom.value.trim()||'싱글 오리진'):base;
+        // 규격은 제거했으므로 보내지 않음(서버가 필요하면 infer해서 넣어도 됨)
+        items.push({item:name, qty});
+      }
+    });
+    if(items.length===0){showError('최소 1개 이상 입력해주세요.');return;}
+
+    submitBtn.disabled=true; submitBtn.textContent='제출 중...';
+    const payload={company, phone, items};
+
+    try{
+      const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const txt=await res.text();
+      if(!res.ok){ showError(`요청 실패 (HTTP ${res.status})\n${txt}`); return; }
+      let data=null; try{ data=JSON.parse(txt);}catch(_){}
+      if(data && data.ok){
+        showSuccess(`주문 접수 완료! 주문번호: ${data.orderId}`);
+        document.getElementById('company').value=''; document.getElementById('phone').value='';
+        tbody.innerHTML=''; addRow(); updateTotal();
+      }else{
+        showError(`응답 형식 오류\n${txt}`);
+      }
+    }catch(e){
+      showError(`네트워크 오류: ${e.message}`);
+    }finally{
+      submitBtn.disabled=false; submitBtn.textContent='주문 제출';
+    }
+  }
+
+  function showSuccess(t){document.getElementById('msg').innerHTML=`<div class='success'>${t}</div>`;}
+  function showError(t){document.getElementById('msg').innerHTML=`<div class='error'>${t}</div>`;}
+  submitBtn.addEventListener('click', submitOrder);
+});
+</script>
+</body>
+</html>
