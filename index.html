@@ -5,34 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>[빈브라더스] 도매 파트너 주문서</title>
   <style>
-    :root { --gap: 12px; --radius: 12px; --h: 44px; } /* 통일된 높이 */
+    :root { --gap: 12px; --radius: 12px; --h: 44px; } /* 통일 높이 */
     body { font-family: system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Helvetica,Arial,sans-serif; margin:0; background:#fafafa; color:#111; }
     .container { max-width:720px; margin:24px auto; padding:24px; background:#fff; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
     h1 { margin:0 0 8px; font-size:22px }
-    .sub { color:#444; margin-bottom:20px; white-space:pre-line; font-size:14px; line-height:1.6 }
+    .top-notice { margin: 4px 0 18px; color:#444; font-size:14px; line-height:1.6; white-space:pre-line; }
     label { font-size:14px; color:#222; display:block; margin:16px 0 6px; font-weight:600 }
     .hint { color:#666; font-size:13px; margin-top:2px; }
 
-    /* === 통일된 컨트롤 스타일 === */
+    /* 통일 컨트롤 스타일 */
     .control {
       width:100%; height:var(--h);
       padding:0 14px; border:1px solid #ddd; border-radius:var(--radius);
       font-size:15px; line-height:var(--h); box-sizing:border-box; background:#fff;
     }
-    /* select 기본 화살표 정리 (iOS/Android 기본 화살표 유지하면서 높이만 통일) */
-    select.control { -webkit-appearance: none; appearance: none; padding-right:36px; }
-    /* 숫자 입력은 오른쪽 정렬 */
-    input[type="number"].control { text-align:right; }
+    select.control{ -webkit-appearance:none; appearance:none; padding-right:36px; }
+    input[type="number"].control{ text-align:right; }
+    input.text-short { max-width:300px; width:100%; }
 
     .table-wrap{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
     table{ width:100%; border-collapse:collapse; min-width:520px; table-layout:fixed; }
     th,td{ padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:middle }
     th{ background:#fafafa; font-weight:600 }
 
-    /* 3열: 제품명 / 수량 / 삭제 */
-    #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:64%; }  /* 제품명 */
-    #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:28%; }  /* 수량 */
-    #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:8%;  text-align:center; } /* 삭제 */
+    /* 데스크탑: 3열 유지 (제품명/수량/삭제) */
+    #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:64%; }
+    #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:28%; }
+    #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:8%;  text-align:center; }
 
     .btn{
       appearance:none; border:none; border-radius:var(--radius);
@@ -51,38 +50,41 @@
     .item-select { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .item-custom { display:none; height:var(--h); }
 
-    /* 수량 입력은 항상 보이도록 고정폭 */
+    /* 수량 입력 고정폭 (데스크탑) */
     #itemsTable td:nth-child(2){ white-space:nowrap; }
     #itemsTable input[type="number"]{ width:84px; min-width:84px; max-width:84px; }
 
-    /* 상단 안내 */
-    .top-notice { margin: 4px 0 18px; color:#444; font-size:14px; line-height:1.6; white-space:pre-line; }
-
-    /* --- 모바일 최적화 --- */
+    /* ✅ 모바일(≤640px): 카드형 전환으로 삭제 버튼 항상 보이게 */
     @media (max-width:640px){
-      .container{ margin:12px auto; padding:16px }
-      h1{ font-size:20px }
-      .btn{ width:100% }
-      .row-actions{ flex-direction:column; align-items:stretch }
-
-      #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:60%; }
-      #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:32%; }
-      #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:8%; }
-      #itemsTable input[type="number"]{ width:76px; min-width:76px; max-width:76px; }
-    }
-
-    /* 극소 화면(≤430px): 2줄 카드형 전환 */
-    @media (max-width:430px){
-      #itemsTable thead{ display:none; }
+      /* 테이블 헤더 숨기고 행을 카드처럼 2줄로 */
+      #itemsTable thead{ display:none !important; }
+      table#itemsTable{ min-width:0 !important; } /* 넘침 방지 */
       #itemsTable tr{
-        display:grid; grid-template-columns: 1fr 68px; gap:8px 10px;
-        grid-template-areas: "name del" "qty qty";
+        display:grid !important;
+        grid-template-columns: 1fr 72px; /* 우측 삭제 고정 */
+        gap:8px 10px;
+        grid-template-areas:
+          "name del"
+          "qty  qty";
       }
       #itemsTable td{ border-bottom:0; padding:0; }
       #itemsTable td:nth-child(1){ grid-area:name; }
       #itemsTable td:nth-child(2){ grid-area:qty; }
       #itemsTable td:nth-child(3){ grid-area:del; text-align:center; }
-      #itemsTable input[type="number"]{ width:100%; }
+
+      /* 컨트롤 폭 */
+      .item-cell .item-select,
+      .item-cell .item-custom { width:100%; }
+      #itemsTable input[type="number"]{ width:100% !important; min-width:0; }
+
+      /* 삭제 버튼 컴팩트 */
+      .btn-danger{
+        min-width:72px;
+        padding:0 10px;
+        height:var(--h);
+        border-radius:var(--radius);
+        white-space:nowrap;
+      }
     }
   </style>
 </head>
@@ -96,7 +98,6 @@
     <!-- 1. 매장 이름 -->
     <label for="company">1) 매장 이름을 넣어주세요.</label>
     <input id="company" class="control text-short" placeholder="(예시) 빈브라더스 앨리웨이 인천점" />
-    <div class="hint"></div>
 
     <!-- 2. 품목 -->
     <label>2) 주문하시는 품목을 입력해 주세요. <span class="hint">(‘+ 품목 추가’로 복수 입력 가능)</span></label>
