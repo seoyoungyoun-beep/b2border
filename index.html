@@ -1,147 +1,282 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>[빈브라더스] 도매 파트너 주문서</title>
-  <style>
-    :root { --gap: 12px; --radius: 12px; }
-    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Helvetica,Arial,sans-serif;
-      margin:0; background:#fafafa; color:#111; }
-    .container { max-width:720px; margin:24px auto; padding:24px; background:#fff; border-radius:16px;
-      box-shadow:0 8px 24px rgba(0,0,0,.06); }
-    h1 { margin:0 0 8px; font-size:22px }
-    .sub { color:#444; margin-bottom:20px; white-space:pre-line; font-size:14px; line-height:1.6 }
-    label { font-size:14px; color:#333; display:block; margin:14px 0 6px }
-    input, select { padding:12px 14px; border:1px solid #ddd; border-radius:var(--radius); font-size:15px; box-sizing:border-box; }
-    input.text-short { max-width:300px; width:100%; }
-    input[type="number"]{ text-align:right }
-    .table-wrap{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    table{ width:100%; border-collapse:collapse; min-width:540px; table-layout:fixed; }
-    th,td{ padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:middle }
-    th{ background:#fafafa; font-weight:600 }
-    #itemsTable th:nth-child(4), #itemsTable td:nth-child(4){ text-align:center; width:84px }
-    .btn{ appearance:none; border:none; border-radius:var(--radius); padding:12px 16px; cursor:pointer; font-weight:600; font-size:15px }
-    .btn-primary{ background:#111; color:#fff }
-    .btn-secondary{ background:#f1f3f5; color:#111 }
-    .btn-danger{ background:#ffe3e3; color:#c92a2a; padding:8px 12px }
-    .row-actions{ display:flex; gap:var(--gap); align-items:center; justify-content:space-between; margin-top:14px }
-    .success,.error{ padding:12px 14px; border-radius:var(--radius); margin-top:12px; font-size:14px; line-height:1.5 }
-    .success{ background:#e6fcf5; color:#087f5b } .error{ background:#fff5f5; color:#c92a2a }
-
-    /* 싱글오리진 규격 라디오 */
-    .radio-group{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
-    .radio-pill{ display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border:1px solid #ddd; border-radius:999px; font-size:14px; }
-    .radio-pill input{ accent-color:#111 }
-
-    @media (max-width:640px){
-      .container{ margin:12px auto; padding:16px }
-      h1{ font-size:20px }
-      .btn{ width:100% }
-      .row-actions{ flex-direction:column; align-items:stretch }
-      input,select{ font-size:16px }
-      /* 모바일 컬럼 비율 */
-      #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:46% }
-      #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:24% }
-      #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:22% }
-      #itemsTable th:nth-child(4), #itemsTable td:nth-child(4){ width:8%; text-align:center }
-      #itemsTable input[type="number"]{ width:68px !important; min-width:68px; max-width:68px }
-      .btn-danger{ padding:6px 8px }
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>[빈브라더스] 도매 파트너 주문서</title>
+  <style>
+    :root { --gap: 12px; --radius: 12px; }
+    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Helvetica,Arial,sans-serif;
+      margin:0; background:#fafafa; color:#111; }
+    .container { max-width:720px; margin:24px auto; padding:24px; background:#fff; border-radius:16px;
+      box-shadow:0 8px 24px rgba(0,0,0,.06); }
+    h1 { margin:0 0 8px; font-size:22px }
+    .sub { color:#444; margin-bottom:20px; white-space:pre-line; font-size:14px; line-height:1.6 }
+    label { font-size:14px; color:#333; display:block; margin:14px 0 6px }
+    input, select { padding:12px 14px; border:1px solid #ddd; border-radius:var(--radius); font-size:15px; box-sizing:border-box; }
+    input.text-short { max-width:300px; width:100%; }
+    input[type="number"]{ text-align:right }
+    .table-wrap{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    table{ width:100%; border-collapse:collapse; min-width:360px; table-layout:fixed; }
+    th,td{ padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:middle }
+    th{ background:#fafafa; font-weight:600 }
+    .btn{ appearance:none; border:none; border-radius:var(--radius); padding:12px 16px; cursor:pointer; font-weight:600; font-size:15px }
+    .btn-primary{ background:#111; color:#fff }
+    .btn-secondary{ background:#f1f3f5; color:#111 }
+    .btn-danger{ background:#ffe3e3; color:#c92a2a; padding:12px 16px; width:100%; margin-top:12px }
+    .row-actions{ display:flex; gap:var(--gap); align-items:center; justify-content:space-between; margin-top:14px }
+    .success,.error{ padding:12px 14px; border-radius:var(--radius); margin-top:12px; font-size:14px; line-height:1.5 }
+    .success{ background:#e6fcf5; color:#087f5b } .error{ background:#fff5f5; color:#c92a2a }
+    .radio-group-row{ display:flex; flex-direction:column; gap:8px; }
+    .radio-pill{ display:flex; align-items:center; gap:6px; padding:10px 14px; border:1px solid #ddd; border-radius:999px; font-size:14px; cursor:pointer; transition:background .2s }
+    .radio-pill:hover{ background:#f8f9fa }
+    .radio-pill input[type="radio"]{ margin:0; accent-color:#111; }
+    .radio-pill input[type="radio"]:checked + span{ font-weight:600; color:#111 }
+    .radio-pill-selected{ background:#e9ecef; border-color:#adb5bd; }
+    .radio-pill-selected:hover{ background:#e9ecef; }
+    
+    @media (max-width:640px){
+      .container{ margin:12px auto; padding:16px }
+      h1{ font-size:20px }
+      .btn{ width:100% }
+      .row-actions{ flex-direction:column; align-items:stretch }
+      input,select{ font-size:16px }
+      .table-wrap{ width:100%; overflow-x:hidden; }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>[빈브라더스] 도매 파트너 주문서</h1>
-    <div class="sub">- 평일 오전 10시까지 주문시 당일 출고됩니다. 나머지 주문 건들은 익일 출고됩니다.
+  <div class="container">
+    <h1>[빈브라더스] 도매 파트너 주문서</h1>
+    <div class="sub">- 평일 오전 10시까지 주문시 당일 출고됩니다. 나머지 주문 건들은 익일 출고됩니다.
 - 긴급 출고 요청 시, 카톡문의 혹은 전화 주세요. (010 8767 4709)</div>
 
-    <label for="company">매장 이름</label>
-    <input id="company" class="text-short" placeholder="예) 강남점 / 홍대점" />
+    <label for="company">매장 이름</label>
+    <input id="company" class="text-short" placeholder="예) 강남점 / 홍대점" />
 
-    <label>주문 품목</label>
-    <div class="table-wrap">
-      <table id="itemsTable">
-        <thead>
-          <tr><th>제품명</th><th>규격</th><th>수량</th><th>삭제</th></tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+    <label>주문 품목</label>
+    <div id="itemsContainer">
+          </div>
+    <div class="row-actions">
+      <span id="totalQtyText">총 수량: 0개</span>
+      <button id="deleteRow" class="btn btn-danger" disabled>선택 품목 삭제</button>
+    </div>
 
-    <div class="row-actions">
-      <button id="addRow" class="btn btn-secondary">+ 품목 추가</button>
-      <span id="totalQtyText">총 수량: 0개</span>
-    </div>
+    <label for="phone">연락처</label>
+    <input id="phone" class="text-short" type="tel" inputmode="tel" placeholder="010-1234-5678" />
 
-    <label for="phone">연락처</label>
-    <input id="phone" class="text-short" type="tel" inputmode="tel" placeholder="010-1234-5678" />
+    <div style="margin-top:12px">
+      <button id="submitBtn" class="btn btn-primary">주문 제출</button>
+    </div>
 
-    <div style="margin-top:12px">
-      <button id="submitBtn" class="btn btn-primary">주문 제출</button>
-    </div>
-
-    <div id="msg"></div>
-  </div>
+    <div id="msg"></div>
+  </div>
 
 <script>
 const ITEMS = [
-  "[원두] 블랙수트_1kg","[원두] 벨벳화이트_1kg","[원두] 세븐티_1kg",
-  "[원두] 몰트_1kg","[원두] 매트_1kg",
-  "[원두] 디카페인_ 미디엄로스트_1kg","[원두] 디카페인_ 다크 로스트_1kg",
-  "[콜드브루] 블랙수트(고농도)_1L","[콜드브루] 블랙수트(중농도)_500ml",
-  "[콜드브루] 디카페인(고농도)_1L","[콜드브루] 벨벳화이트(중농도)_500ml",
-  "[콜드브루] 디카페인(중농도)_500ml","[콜드브루] 블랙수트 RTD_235ml",
-  "[기타] 싱글 오리진_(제품명 변경)"
+  "[원두] 블랙수트_1kg","[원두] 벨벳화이트_1kg","[원두] 세븐티_1kg",
+  "[원두] 몰트_1kg","[원두] 매트_1kg",
+  "[원두] 디카페인_ 미디엄로스트_1kg","[원두] 디카페인_ 다크 로스트_1kg",
+  "[콜드브루] 블랙수트(고농도)_1L","[콜드브루] 블랙수트(중농도)_500ml",
+  "[콜드브루] 디카페인(고농도)_1L","[콜드브루] 벨벳화이트(중농도)_500ml",
+  "[콜드브루] 디카페인(중농도)_500ml","[콜드브루] 블랙수트 RTD_235ml",
+  "[기타] 싱글 오리진_(제품명 변경)"
 ];
 const SIZES = ["1kg","1L","500ml","235ml"];
 const SINGLE_SIZES = ["200g","1kg"];
 const WEB_APP_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL"; // 붙여넣기
 
-const tbody = document.getElementById('tbody');
-const addRowBtn = document.getElementById('addRow');
+const itemsContainer = document.getElementById('itemsContainer');
+const deleteRowBtn = document.getElementById('deleteRow');
 const submitBtn = document.getElementById('submitBtn');
 const totalQtyText = document.getElementById('totalQtyText');
 
-function makeSelect(list){
-  const s=document.createElement('select');
-  list.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);});
-  return s;
+let selectedRow = null;
+
+function inferSize(v){const m=v.match(/_(\d+(?:kg|ml|L))$/)||v.match(/(\\d+(?:kg|ml|L))$/); return m?m[1]:'';}
+
+function createItemRow(item, isSingleOrigin = false){
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.style.display = 'none';
+
+  const form = document.createElement('div');
+  form.style.display = 'flex';
+  form.style.alignItems = 'center';
+  form.style.gap = '12px';
+  form.style.marginTop = '8px';
+
+  const customInput = document.createElement('input');
+  customInput.className = 'text-short';
+  customInput.placeholder = '싱글 오리진 제품명';
+  customInput.style.display = 'none';
+  customInput.style.flexGrow = '1';
+
+  const qtyInput = document.createElement('input');
+  qtyInput.type = 'number';
+  qtyInput.min = '1';
+  qtyInput.placeholder = '0';
+  qtyInput.style.width = '60px';
+  qtyInput.addEventListener('input', updateTotal);
+
+  const sizeContainer = document.createElement('div');
+  sizeContainer.style.display = 'flex';
+  sizeContainer.style.gap = '10px';
+  sizeContainer.style.alignItems = 'center';
+
+  if(isSingleOrigin){
+    customInput.style.display = 'block';
+    SINGLE_SIZES.forEach(sz => {
+      const label = document.createElement('label');
+      label.className = 'radio-pill';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'single_size_' + Date.now();
+      radio.value = sz;
+      radio.checked = sz === '200g';
+      const span = document.createElement('span');
+      span.textContent = sz;
+      label.append(radio, span);
+      sizeContainer.appendChild(label);
+    });
+  } else {
+    const sizeSelect = document.createElement('select');
+    SIZES.forEach(sz => {
+      const option = document.createElement('option');
+      option.value = sz;
+      option.textContent = sz;
+      sizeSelect.appendChild(option);
+    });
+    const inferredSize = inferSize(item);
+    if (inferredSize) sizeSelect.value = inferredSize;
+    sizeSelect.disabled = true;
+    sizeContainer.appendChild(sizeSelect);
+  }
+
+  const qtyLabel = document.createElement('div');
+  qtyLabel.textContent = '수량: ';
+  qtyLabel.style.whiteSpace = 'nowrap';
+  qtyLabel.style.fontSize = '14px';
+
+  form.append(isSingleOrigin ? customInput : sizeContainer, qtyLabel, qtyInput);
+  div.append(form);
+  return div;
 }
-function makeSingleSizeRadios(namePrefix){
-  const wrap=document.createElement('div'); wrap.className='radio-group';
-  SINGLE_SIZES.forEach((sz,i)=>{
-    const label=document.createElement('label'); label.className='radio-pill';
-    const id=namePrefix+'_'+i;
-    const input=document.createElement('input'); input.type='radio'; input.name=namePrefix; input.value=sz; if(i===0) input.checked=true;
-    const span=document.createElement('span'); span.textContent=sz;
-    label.append(input, span); wrap.appendChild(label);
-  });
-  return wrap;
+
+function renderItems(){
+  itemsContainer.innerHTML = '';
+  ITEMS.forEach((item, index) => {
+    const radioWrap = document.createElement('label');
+    radioWrap.className = 'radio-pill';
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'item_selection';
+    radio.value = item;
+    const span = document.createElement('span');
+    span.textContent = item;
+    radioWrap.append(radio, span);
+    itemsContainer.appendChild(radioWrap);
+
+    const itemDetails = createItemRow(item, item.includes('싱글 오리진'));
+    itemsContainer.appendChild(itemDetails);
+
+    radio.addEventListener('change', () => {
+      if (selectedRow) selectedRow.style.display = 'none';
+      selectedRow = itemDetails;
+      selectedRow.style.display = 'block';
+      itemsContainer.querySelectorAll('.radio-pill').forEach(pill => pill.classList.remove('radio-pill-selected'));
+      radioWrap.classList.add('radio-pill-selected');
+      deleteRowBtn.disabled = false;
+      updateTotal();
+    });
+  });
 }
 
-function addRow(){
-  const tr=document.createElement('tr');
+function updateTotal(){
+  let t = 0;
+  [...itemsContainer.querySelectorAll('input[type="number"]')].forEach(i => {
+    const v = parseInt(i.value || '0', 10);
+    if(v > 0) t += v;
+  });
+  totalQtyText.textContent = `총 수량: ${t}개`;
+}
 
-  // 제품명
-  const tdItem=document.createElement('td');
-  const selItem=makeSelect(ITEMS);
-  const custom=document.createElement('input');
-  custom.placeholder='싱글 오리진 제품명'; custom.style.display='none'; custom.style.marginTop='6px';
-  tdItem.append(selItem, custom);
+function deleteSelectedRow(){
+  if(selectedRow){
+    const parent = selectedRow.previousElementSibling;
+    if(parent) parent.remove();
+    selectedRow.remove();
+    selectedRow = null;
+    deleteRowBtn.disabled = true;
+    updateTotal();
+  }
+}
 
-  // 규격
-  const tdSize=document.createElement('td');
-  const sizeSel=makeSelect(SIZES); sizeSel.disabled=true; tdSize.appendChild(sizeSel);
+deleteRowBtn.onclick = deleteSelectedRow;
 
-  // 수량
-  const tdQty=document.createElement('td');
-  const qty=document.createElement('input'); qty.type='number'; qty.min='1'; qty.placeholder='0';
-  qty.addEventListener('input', updateTotal); tdQty.appendChild(qty);
+renderItems();
 
-  // 삭제
-  const tdDel=document.createElement('td');
-  const del=document.createElement('button'); del.textContent='삭제'; del.className='btn btn-danger';
-  del.onclick=()=>{ tr.remove(); updateTotal(); }; tdDel.appendChild(del);
+async function submitOrder(){
+  const company = document.getElementById('company').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  if(!company || !phone){showError('매장명과 연락처를 입력해주세요.');return;}
 
-  tr.append(tdItem, tdSize, tdQt
+  const items = [];
+  const itemElements = itemsContainer.querySelectorAll('.item-row');
+  
+  for (let i = 0; i < itemElements.length; i++) {
+    const itemElement = itemElements[i];
+    const radioInput = itemElement.previousElementSibling.querySelector('input[type="radio"]');
+    
+    const qtyInput = itemElement.querySelector('input[type="number"]');
+    const qty = parseInt(qtyInput.value || '0', 10);
+    
+    if (qty > 0) {
+      const base = radioInput.value;
+      let size = '';
+      let name = base;
+
+      if (base.includes('싱글 오리진')) {
+        const customInput = itemElement.querySelector('input.text-short');
+        const checkedSize = itemElement.querySelector('input[type=radio]:checked');
+        name = customInput.value.trim() || '싱글 오리진';
+        size = checkedSize ? checkedSize.value : '200g';
+      } else {
+        size = itemElement.querySelector('select').value;
+      }
+      items.push({ item: name, size, qty });
+    }
+  }
+
+  if(items.length === 0){showError('최소 1개 이상 품목을 선택하고 수량을 입력해주세요.');return;}
+
+  submitBtn.disabled = true; submitBtn.textContent = '제출 중...';
+  const payload = {company, phone, items};
+
+  try{
+    const res = await fetch(WEB_APP_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    const txt = await res.text();
+    if(!res.ok){ showError(`요청 실패 (HTTP ${res.status})\n${txt}`); return; }
+    let data = null; try{ data = JSON.parse(txt);}catch(_){}
+    if(data && data.ok){
+      showSuccess(`주문 접수 완료! 주문번호: ${data.orderId}`);
+      document.getElementById('company').value = '';
+      document.getElementById('phone').value = '';
+      renderItems(); // Reset form
+      updateTotal();
+    }else{
+      showError(`응답 형식 오류\n${txt}`);
+    }
+  }catch(e){
+    showError(`네트워크 오류: ${e.message}`);
+  }finally{
+    submitBtn.disabled = false; submitBtn.textContent = '주문 제출';
+  }
+}
+
+function showSuccess(t){document.getElementById('msg').innerHTML = `<div class='success'>${t}</div>`;}
+function showError(t){document.getElementById('msg').innerHTML = `<div class='error'>${t}</div>`;}
+submitBtn.onclick = submitOrder;
+</script>
+</body>
+</html>
