@@ -19,10 +19,10 @@
       padding: 12px 14px; border:1px solid #ddd; border-radius:var(--radius);
       font-size:15px; box-sizing:border-box;
     }
-    input.text-short { max-width:360px; width:100%; }
+    input.text-short { max-width:300px; width:100%; }
     input[type="number"] { text-align:right }
     .table-wrap { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    table { width:100%; border-collapse:collapse; min-width:540px; }
+    table { width:100%; border-collapse:collapse; min-width:540px; table-layout: fixed; }
     th, td { padding:10px; border-bottom:1px solid #eee; text-align:left;
       font-size:14px; vertical-align:middle }
     th { background:#fafafa; font-weight:600 }
@@ -42,6 +42,14 @@
       .btn{width:100%}
       .row-actions{flex-direction:column;align-items:stretch}
       input,select{font-size:16px}
+      /* 테이블 컬럼 비율 */
+      #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:46%; }
+      #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:24%; }
+      #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:22%; }
+      #itemsTable th:nth-child(4), #itemsTable td:nth-child(4){ width:8%; text-align:center; }
+      /* 수량 입력칸, 삭제버튼 작게 */
+      #itemsTable input[type="number"]{ width:68px !important; min-width:68px; max-width:68px; }
+      .btn-danger{ padding:6px 8px; }
     }
   </style>
 </head>
@@ -83,4 +91,77 @@
 const ITEMS = [
   "[원두] 블랙수트_1kg","[원두] 벨벳화이트_1kg","[원두] 세븐티_1kg",
   "[원두] 몰트_1kg","[원두] 매트_1kg",
-  "[원두] 디카페인_ 미디엄로스트_1kg","[원두] 디카페인_ 다크 로스트_1kg
+  "[원두] 디카페인_ 미디엄로스트_1kg","[원두] 디카페인_ 다크 로스트_1kg",
+  "[콜드브루] 블랙수트(고농도)_1L","[콜드브루] 블랙수트(중농도)_500ml",
+  "[콜드브루] 디카페인(고농도)_1L","[콜드브루] 벨벳화이트(중농도)_500ml",
+  "[콜드브루] 디카페인(중농도)_500ml","[콜드브루] 블랙수트 RTD_235ml",
+  "[기타] 싱글 오리진_(제품명 변경)"
+];
+const SIZES = ["1kg","1L","500ml","235ml"];
+const SINGLE_SIZES = ["200g","1kg"];
+const WEB_APP_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL"; // 붙여넣기
+
+const tbody=document.getElementById('tbody');
+const addRowBtn=document.getElementById('addRow');
+const submitBtn=document.getElementById('submitBtn');
+const totalQtyText=document.getElementById('totalQtyText');
+
+function makeSelect(opts){const s=document.createElement('select');
+  opts.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;s.appendChild(op)});return s;}
+
+function addRow(){
+  const tr=document.createElement('tr');
+  const tdItem=document.createElement('td');
+  const selItem=makeSelect(ITEMS);
+  const custom=document.createElement('input');
+  custom.placeholder='싱글 오리진 제품명'; custom.style.display='none'; custom.style.marginTop='6px';
+  tdItem.appendChild(selItem); tdItem.appendChild(custom);
+  const tdSize=document.createElement('td');
+  const selSize=makeSelect(SIZES); selSize.disabled=true; tdSize.appendChild(selSize);
+  const tdQty=document.createElement('td');
+  const qty=document.createElement('input'); qty.type='number'; qty.min='1'; qty.placeholder='0';
+  qty.addEventListener('input',updateTotal); tdQty.appendChild(qty);
+  const tdDel=document.createElement('td');
+  const del=document.createElement('button'); del.textContent='삭제'; del.className='btn btn-danger';
+  del.onclick=()=>{tr.remove();updateTotal()}; tdDel.appendChild(del);
+  tr.append(tdItem,tdSize,tdQty,tdDel); tbody.appendChild(tr);
+  function inferSize(v){const m=v.match(/_(\\d+(?:kg|ml|L))$/)||v.match(/(\\d+(?:kg|ml|L))$/);return m?m[1]:''}
+  function handleChange(){
+    if(selItem.value.includes('싱글 오리진')){custom.style.display='block';tdSize.innerHTML='';tdSize.appendChild(makeSelect(SINGLE_SIZES))}
+    else{custom.style.display='none';tdSize.innerHTML='';const sizeSel=makeSelect(SIZES);
+      const s=inferSize(selItem.value);if(s) sizeSel.value=s; sizeSel.disabled=true;tdSize.appendChild(sizeSel)}
+  }
+  selItem.addEventListener('change',handleChange);handleChange();updateTotal();
+}
+function updateTotal(){let t=0;[...tbody.querySelectorAll('input[type=number]')].forEach(i=>{const v=parseInt(i.value||'0',10);if(v>0)t+=v});totalQtyText.textContent=`총 수량: ${t}개`;}
+addRowBtn.onclick=addRow;addRow();
+
+async function submitOrder(){
+  const company=document.getElementById('company').value.trim();
+  const phone=document.getElementById('phone').value.trim();
+  if(!company||!phone){showError('매장명과 연락처를 입력해주세요.');return;}
+  const items=[];[...tbody.querySelectorAll('tr')].forEach(r=>{
+    const base=r.children[0].querySelector('select').value;
+    const custom=r.children[0].querySelector('input');
+    const size=r.children[1].querySelector('select').value;
+    const qty=parseInt(r.children[2].querySelector('input').value||'0',10);
+    if(qty>0){items.push({item:base.includes('싱글 오리진')?(custom.value.trim()||'싱글 오리진'):base,size,qty});}
+  });
+  if(items.length===0){showError('최소 1개 이상 입력해주세요.');return;}
+  submitBtn.disabled=true;submitBtn.textContent='제출 중...';
+  const payload={company,phone,items};
+  try{
+    const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const txt=await res.text();if(!res.ok){showError(`요청 실패 ${res.status}\\n${txt}`);return;}
+    let data=null;try{data=JSON.parse(txt);}catch(_){}
+    if(data&&data.ok){showSuccess(`주문 접수 완료! 주문번호: ${data.orderId}`);document.getElementById('company').value='';document.getElementById('phone').value='';tbody.innerHTML='';addRow();updateTotal();}
+    else{showError(`응답 오류\\n${txt}`);}
+  }catch(e){showError(`네트워크 오류: ${e.message}`);}finally{submitBtn.disabled=false;submitBtn.textContent='주문 제출';}
+}
+function showSuccess(t){document.getElementById('msg').innerHTML=`<div class='success'>${t}</div>`;}
+function showError(t){document.getElementById('msg').innerHTML=`<div class='error'>${t}</div>`;}
+submitBtn.onclick=submitOrder;
+</script>
+</body>
+</html>
+
