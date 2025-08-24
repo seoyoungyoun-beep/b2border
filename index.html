@@ -5,19 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>[빈브라더스] 도매 파트너 주문서</title>
   <style>
-    :root { --gap: 12px; --radius: 12px; }
+    :root { --gap: 12px; --radius: 12px; --h: 44px; } /* 통일된 높이 */
     body { font-family: system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Helvetica,Arial,sans-serif; margin:0; background:#fafafa; color:#111; }
     .container { max-width:720px; margin:24px auto; padding:24px; background:#fff; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
     h1 { margin:0 0 8px; font-size:22px }
     .sub { color:#444; margin-bottom:20px; white-space:pre-line; font-size:14px; line-height:1.6 }
-    label { font-size:14px; color:#333; display:block; margin:14px 0 6px }
+    label { font-size:14px; color:#222; display:block; margin:16px 0 6px; font-weight:600 }
+    .hint { color:#666; font-size:13px; margin-top:2px; }
 
-    input, button { font-size:15px }
-    input[type="text"], input[type="tel"], input[type="number"]{
-      padding:12px 14px; border:1px solid #ddd; border-radius:var(--radius); box-sizing:border-box;
+    /* === 통일된 컨트롤 스타일 === */
+    .control {
+      width:100%; height:var(--h);
+      padding:0 14px; border:1px solid #ddd; border-radius:var(--radius);
+      font-size:15px; line-height:var(--h); box-sizing:border-box; background:#fff;
     }
-    input.text-short { max-width:300px; width:100%; }
-    input[type="number"]{ text-align:right }
+    /* select 기본 화살표 정리 (iOS/Android 기본 화살표 유지하면서 높이만 통일) */
+    select.control { -webkit-appearance: none; appearance: none; padding-right:36px; }
+    /* 숫자 입력은 오른쪽 정렬 */
+    input[type="number"].control { text-align:right; }
 
     .table-wrap{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
     table{ width:100%; border-collapse:collapse; min-width:520px; table-layout:fixed; }
@@ -29,10 +34,13 @@
     #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:28%; }  /* 수량 */
     #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:8%;  text-align:center; } /* 삭제 */
 
-    .btn{ appearance:none; border:none; border-radius:var(--radius); padding:12px 16px; cursor:pointer; font-weight:600; }
+    .btn{
+      appearance:none; border:none; border-radius:var(--radius);
+      height:var(--h); padding:0 14px; cursor:pointer; font-weight:700; font-size:15px; line-height:var(--h);
+    }
     .btn-primary{ background:#111; color:#fff }
     .btn-secondary{ background:#f1f3f5; color:#111 }
-    .btn-danger{ background:#ffe3e3; color:#c92a2a; padding:8px 12px }
+    .btn-danger{ background:#ffe3e3; color:#c92a2a } /* 행 삭제 버튼도 동일 높이/라운딩 */
 
     .row-actions{ display:flex; gap:var(--gap); align-items:center; justify-content:space-between; margin-top:14px }
     .success,.error{ padding:12px 14px;border-radius:var(--radius);margin-top:12px;font-size:14px;line-height:1.5 }
@@ -40,12 +48,15 @@
 
     /* 제품명 셀 내부 */
     .item-cell { display:flex; flex-direction:column; gap:6px; }
-    .item-select { width:100%; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .item-custom { display:none; }
+    .item-select { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .item-custom { display:none; height:var(--h); }
 
     /* 수량 입력은 항상 보이도록 고정폭 */
     #itemsTable td:nth-child(2){ white-space:nowrap; }
     #itemsTable input[type="number"]{ width:84px; min-width:84px; max-width:84px; }
+
+    /* 상단 안내 */
+    .top-notice { margin: 4px 0 18px; color:#444; font-size:14px; line-height:1.6; white-space:pre-line; }
 
     /* --- 모바일 최적화 --- */
     @media (max-width:640px){
@@ -53,7 +64,6 @@
       h1{ font-size:20px }
       .btn{ width:100% }
       .row-actions{ flex-direction:column; align-items:stretch }
-      input,select{ font-size:16px }
 
       #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:60%; }
       #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:32%; }
@@ -79,13 +89,17 @@
 <body>
   <div class="container">
     <h1>[빈브라더스] 도매 파트너 주문서</h1>
-    <div class="sub">- 평일 오전 10시까지 주문시 당일 출고됩니다. 나머지 주문 건들은 익일 출고됩니다.
+
+    <div class="top-notice">- 평일 오전 10시까지 주문시 당일 출고됩니다. 나머지 주문 건들은 익일 출고됩니다.
 - 긴급 출고 요청 시, 카톡문의 혹은 전화 주세요. (010 8767 4709)</div>
 
-    <label for="company">매장 이름</label>
-    <input id="company" class="text-short" placeholder="예) 강남점 / 홍대점" />
+    <!-- 1. 매장 이름 -->
+    <label for="company">1) 매장 이름을 넣어주세요.</label>
+    <input id="company" class="control text-short" placeholder="(예시) 빈브라더스 앨리웨이 인천점" />
+    <div class="hint"></div>
 
-    <label>주문 품목</label>
+    <!-- 2. 품목 -->
+    <label>2) 주문하시는 품목을 입력해 주세요. <span class="hint">(‘+ 품목 추가’로 복수 입력 가능)</span></label>
     <div class="table-wrap">
       <table id="itemsTable">
         <thead>
@@ -100,8 +114,9 @@
       <span id="totalQtyText">총 수량: 0개</span>
     </div>
 
-    <label for="phone">연락처</label>
-    <input id="phone" class="text-short" type="tel" inputmode="tel" placeholder="010-1234-5678" />
+    <!-- 3. 연락처 -->
+    <label for="phone">3) 연락처를 남겨 주세요.</label>
+    <input id="phone" class="control text-short" type="tel" inputmode="tel" placeholder="010-1234-5678" />
 
     <div style="margin-top:12px">
       <button type="button" id="submitBtn" class="btn btn-primary">주문 제출</button>
@@ -129,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function makeSelect(list){
     const s=document.createElement('select');
-    s.className = 'item-select';
+    s.className = 'control item-select';
     list.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;s.appendChild(o);});
     return s;
   }
@@ -142,12 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
     tdItem.className='item-cell';
     const selItem=makeSelect(ITEMS);
     const custom=document.createElement('input');
-    custom.type='text'; custom.placeholder='싱글 오리진 제품명'; custom.className='item-custom';
+    custom.type='text'; custom.placeholder='싱글 오리진 제품명'; custom.className='control item-custom';
     tdItem.append(selItem, custom);
 
     // 2) 수량 (항상 빈 칸 보이기)
     const tdQty=document.createElement('td');
-    const qty=document.createElement('input'); qty.type='number'; qty.min='1'; qty.placeholder='0';
+    const qty=document.createElement('input'); 
+    qty.type='number'; qty.min='1'; qty.placeholder='0'; 
+    qty.className='control';
     qty.addEventListener('input', updateTotal);
     tdQty.appendChild(qty);
 
@@ -204,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if(items.length===0){showError('최소 1개 이상 입력해주세요.');return;}
 
-    submitBtn.disabled=true; submitBtn.textContent='제출 중...';
+    submitBtn.disabled=true; submitBtn.textContent='주문 제출 중...';
     const payload={company, phone, items};
 
     try{
@@ -233,3 +250,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
