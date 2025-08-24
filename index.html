@@ -16,36 +16,25 @@
     input, select { padding:12px 14px; border:1px solid #ddd; border-radius:var(--radius); font-size:15px; box-sizing:border-box; }
     input.text-short { max-width:300px; width:100%; }
     input[type="number"]{ text-align:right }
-    .table-wrap{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    table{ width:100%; border-collapse:collapse; min-width:540px; table-layout:fixed; }
-    th,td{ padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:middle }
-    th{ background:#fafafa; font-weight:600 }
-    #itemsTable th:nth-child(4), #itemsTable td:nth-child(4){ text-align:center; width:84px }
     .btn{ appearance:none; border:none; border-radius:var(--radius); padding:12px 16px; cursor:pointer; font-weight:600; font-size:15px }
     .btn-primary{ background:#111; color:#fff }
     .btn-secondary{ background:#f1f3f5; color:#111 }
-    .btn-danger{ background:#ffe3e3; color:#c92a2a; padding:8px 12px }
     .row-actions{ display:flex; gap:var(--gap); align-items:center; justify-content:space-between; margin-top:14px }
     .success,.error{ padding:12px 14px; border-radius:var(--radius); margin-top:12px; font-size:14px; line-height:1.5 }
     .success{ background:#e6fcf5; color:#087f5b } .error{ background:#fff5f5; color:#c92a2a }
-    .radio-group{ display:flex; flex-direction:column; gap:8px; }
-    .radio-pill{ display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border:1px solid #ddd; border-radius:999px; font-size:14px; }
+    .radio-group{ display:flex; flex-wrap:wrap; gap:8px; }
+    .radio-pill{ display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border:1px solid #ddd; border-radius:999px; font-size:14px; cursor:pointer; }
     .radio-pill input{ accent-color:#111 }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-    .modal { background: #fff; padding: 24px; border-radius: 16px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
-    .modal h2 { margin-top: 0; }
-    @media (max-width:640px){
+    .product-details { margin-top: 10px; display: none; }
+    .product-details-visible { display: block; }
+    .product-details .form-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .product-row { border-bottom: 1px solid #eee; padding-bottom: 16px; margin-bottom: 16px; }
+     @media (max-width:640px){
       .container{ margin:12px auto; padding:16px }
       h1{ font-size:20px }
       .btn{ width:100% }
       .row-actions{ flex-direction:column; align-items:stretch }
       input,select{ font-size:16px }
-      #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:46% }
-      #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:24% }
-      #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:22% }
-      #itemsTable th:nth-child(4), #itemsTable td:nth-child(4){ width:8%; text-align:center }
-      #itemsTable input[type="number"]{ width:68px !important; min-width:68px; max-width:68px }
-      .btn-danger{ padding:6px 8px }
     }
   </style>
 </head>
@@ -59,17 +48,10 @@
     <input id="company" class="text-short" placeholder="예) 강남점 / 홍대점" />
 
     <label>주문 품목</label>
-    <div class="table-wrap">
-      <table id="itemsTable">
-        <thead>
-          <tr><th>제품명</th><th>규격</th><th>수량</th><th>삭제</th></tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-
+    <div id="orderItems"></div>
+    <button id="addItemBtn" class="btn btn-secondary" style="width:100%; margin-top:12px;">+ 품목 추가</button>
+    
     <div class="row-actions">
-      <button id="addRow" class="btn btn-secondary">+ 품목 추가</button>
       <span id="totalQtyText">총 수량: 0개</span>
     </div>
 
@@ -81,16 +63,6 @@
     </div>
 
     <div id="msg"></div>
-  </div>
-
-  <div id="productModal" class="modal-overlay" style="display: none;">
-    <div class="modal">
-      <h2>제품 선택</h2>
-      <div id="productList" class="radio-group"></div>
-      <div style="margin-top:20px;">
-        <button id="closeModal" class="btn btn-secondary">닫기</button>
-      </div>
-    </div>
   </div>
 
 <script>
@@ -105,102 +77,128 @@ const ITEMS = [
 ];
 const SIZES = ["1kg","1L","500ml","235ml"];
 const SINGLE_SIZES = ["200g","1kg"];
-const WEB_APP_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL";
+const WEB_APP_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL"; // 붙여넣기
 
-const tbody = document.getElementById('tbody');
-const addRowBtn = document.getElementById('addRow');
+const orderItemsContainer = document.getElementById('orderItems');
+const addItemBtn = document.getElementById('addItemBtn');
 const submitBtn = document.getElementById('submitBtn');
 const totalQtyText = document.getElementById('totalQtyText');
-const productModal = document.getElementById('productModal');
-const productList = document.getElementById('productList');
-const closeModalBtn = document.getElementById('closeModal');
-let currentTr = null;
 
 function inferSize(v){const m=v.match(/_(\d+(?:kg|ml|L))$/)||v.match(/(\\d+(?:kg|ml|L))$/); return m?m[1]:'';}
 
-function openProductModal(tr){
-  currentTr = tr;
-  productList.innerHTML = '';
+function createItemRow(){
+  const row = document.createElement('div');
+  row.className = 'product-row';
+
+  const selectLabel = document.createElement('label');
+  selectLabel.textContent = '제품 선택';
+  row.appendChild(selectLabel);
+  
+  const radioGroup = document.createElement('div');
+  radioGroup.className = 'radio-group';
   ITEMS.forEach(item => {
     const label = document.createElement('label');
     label.className = 'radio-pill';
     const input = document.createElement('input');
     input.type = 'radio';
-    input.name = 'product_select';
+    input.name = `product_${Date.now()}`;
     input.value = item;
     const span = document.createElement('span');
     span.textContent = item;
     label.append(input, span);
-    productList.appendChild(label);
-    input.addEventListener('change', () => {
-      updateRowWithProduct(item);
-      productModal.style.display = 'none';
+    radioGroup.appendChild(label);
+  });
+  row.appendChild(radioGroup);
+
+  const detailsDiv = document.createElement('div');
+  detailsDiv.style.display = 'none';
+
+  const qtyRow = document.createElement('div');
+  qtyRow.className = 'form-row';
+  const qtyLabel = document.createElement('span');
+  qtyLabel.textContent = '수량: ';
+  const qtyInput = document.createElement('input');
+  qtyInput.type = 'number';
+  qtyInput.min = '0';
+  qtyInput.placeholder = '0';
+  qtyInput.style.width = '60px';
+  qtyInput.addEventListener('input', updateTotal);
+  qtyRow.append(qtyLabel, qtyInput);
+  detailsDiv.appendChild(qtyRow);
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = '삭제';
+  deleteBtn.className = 'btn btn-danger';
+  deleteBtn.onclick = () => { row.remove(); updateTotal(); };
+  deleteBtn.style.marginTop = '10px';
+  deleteBtn.style.padding = '8px 12px';
+  deleteBtn.style.fontSize = '14px';
+
+  row.appendChild(detailsDiv);
+  row.appendChild(deleteBtn);
+
+  radioGroup.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      detailsDiv.innerHTML = '';
+      const item = e.target.value;
+      
+      const sizeRow = document.createElement('div');
+      sizeRow.className = 'form-row';
+      const sizeLabel = document.createElement('span');
+      sizeLabel.textContent = '규격: ';
+      sizeRow.appendChild(sizeLabel);
+
+      if (item.includes('싱글 오리진')) {
+        const customName = document.createElement('input');
+        customName.placeholder = '싱글 오리진 제품명';
+        customName.className = 'text-short';
+        detailsDiv.appendChild(customName);
+        SINGLE_SIZES.forEach((sz, i) => {
+          const pillLabel = document.createElement('label');
+          pillLabel.className = 'radio-pill';
+          const radioInput = document.createElement('input');
+          radioInput.type = 'radio';
+          radioInput.name = `single_size_${Date.now()}`;
+          radioInput.value = sz;
+          if (i === 0) radioInput.checked = true;
+          const pillSpan = document.createElement('span');
+          pillSpan.textContent = sz;
+          pillLabel.append(radioInput, pillSpan);
+          sizeRow.appendChild(pillLabel);
+        });
+      } else {
+        const sizeSelect = document.createElement('select');
+        SIZES.forEach(sz => {
+          const opt = document.createElement('option');
+          opt.value = sz;
+          opt.textContent = sz;
+          sizeSelect.appendChild(opt);
+        });
+        const inferred = inferSize(item);
+        if (inferred) sizeSelect.value = inferred;
+        sizeSelect.disabled = true;
+        sizeRow.appendChild(sizeSelect);
+      }
+      detailsDiv.appendChild(sizeRow);
+      detailsDiv.appendChild(qtyRow);
+      detailsDiv.style.display = 'block';
+      updateTotal();
     });
   });
-  productModal.style.display = 'flex';
-}
 
-function updateRowWithProduct(item){
-  const tdItem = currentTr.querySelector('.td-item');
-  const tdSize = currentTr.querySelector('.td-size');
-  const tdQty = currentTr.querySelector('.td-qty');
-
-  tdItem.innerHTML = `<span class="product-name">${item}</span>`;
-  
-  if(item.includes('싱글 오리진')){
-    tdItem.innerHTML += '<input class="custom-name text-short" placeholder="싱글 오리진 제품명" style="margin-top:6px;" />';
-    tdSize.innerHTML = '';
-    SINGLE_SIZES.forEach((sz,i)=>{
-      const label=document.createElement('label'); label.className='radio-pill';
-      const id='single_'+Date.now()+Math.random().toString(36).slice(2,6);
-      const input=document.createElement('input'); input.type='radio'; input.name=id; input.value=sz; if(i===0) input.checked=true;
-      const span=document.createElement('span'); span.textContent=sz;
-      label.append(input, span); tdSize.appendChild(label);
-    });
-  } else {
-    tdSize.innerHTML = '';
-    const sizeSel = document.createElement('select');
-    SIZES.forEach(sz=>{const o=document.createElement('option');o.value=sz;o.textContent=sz;sizeSel.appendChild(o);});
-    const s=inferSize(item); if(s) sizeSel.value=s; sizeSel.disabled=true;
-    tdSize.appendChild(sizeSel);
-  }
-}
-
-function addRow(){
-  const tr=document.createElement('tr');
-  
-  const tdItem=document.createElement('td');
-  tdItem.className = 'td-item';
-  const selectBtn = document.createElement('button');
-  selectBtn.className = 'btn btn-secondary';
-  selectBtn.textContent = '제품 선택';
-  selectBtn.onclick = () => openProductModal(tr);
-  tdItem.appendChild(selectBtn);
-
-  const tdSize=document.createElement('td'); tdSize.className = 'td-size';
-  const tdQty=document.createElement('td'); tdQty.className = 'td-qty';
-  const qty=document.createElement('input'); qty.type='number'; qty.min='1'; qty.placeholder='0';
-  qty.addEventListener('input', updateTotal); tdQty.appendChild(qty);
-
-  const tdDel=document.createElement('td');
-  const del=document.createElement('button'); del.textContent='삭제'; del.className='btn btn-danger';
-  del.onclick=()=>{ tr.remove(); updateTotal(); }; tdDel.appendChild(del);
-
-  tr.append(tdItem, tdSize, tdQty, tdDel);
-  tbody.appendChild(tr);
-  updateTotal();
+  orderItemsContainer.appendChild(row);
 }
 
 function updateTotal(){
   let t=0;
-  [...tbody.querySelectorAll('input[type="number"]')].forEach(i=>{
+  [...orderItemsContainer.querySelectorAll('input[type="number"]')].forEach(i=>{
     const v=parseInt(i.value||'0',10); if(v>0) t+=v;
   });
   totalQtyText.textContent = `총 수량: ${t}개`;
 }
 
-addRowBtn.onclick=addRow; addRow();
-closeModalBtn.onclick=() => { productModal.style.display = 'none'; };
+addItemBtn.onclick = createItemRow;
+createItemRow();
 
 async function submitOrder(){
   const company=document.getElementById('company').value.trim();
@@ -208,27 +206,29 @@ async function submitOrder(){
   if(!company||!phone){showError('매장명과 연락처를 입력해주세요.');return;}
 
   const items=[];
-  [...tbody.querySelectorAll('tr')].forEach(r=>{
-    const productName = r.querySelector('.product-name');
-    if(!productName){ return; }
+  [...orderItemsContainer.querySelectorAll('.product-row')].forEach(row=>{
+    const selectedRadio = row.querySelector('input[type="radio"]:checked');
+    if(!selectedRadio) { return; }
 
-    const base = productName.textContent;
-    let size='';
-    let name=base;
-    if(base.includes('싱글 오리진')){
-      const custom=r.querySelector('.custom-name');
-      const checked=r.querySelector('input[type=radio]:checked');
-      name=custom.value.trim()||'싱글 오리진';
-      size = checked ? checked.value : '200g';
-    } else {
-      size=r.querySelector('select').value;
-    }
-    const qty=parseInt(r.querySelector('input[type="number"]').value||'0',10);
-    if(qty>0){
+    const selectedItem = selectedRadio.value;
+    const qty = parseInt(row.querySelector('input[type="number"]').value || '0', 10);
+
+    if(qty > 0){
+      let size = '';
+      let name = selectedItem;
+      if(selectedItem.includes('싱글 오리진')){
+        const customName = row.querySelector('.text-short');
+        const checkedSize = row.querySelector('input[name^="single_size"]:checked');
+        name=customName.value.trim()||'싱글 오리진';
+        size = checkedSize ? checkedSize.value : '200g';
+      } else {
+        size=row.querySelector('select').value;
+      }
       items.push({item:name,size,qty});
     }
   });
-  if(items.length===0){showError('최소 1개 이상 입력해주세요.');return;}
+
+  if(items.length===0){showError('최소 1개 이상 품목을 선택하고 수량을 입력해주세요.');return;}
 
   submitBtn.disabled=true; submitBtn.textContent='제출 중...';
   const payload={company, phone, items};
@@ -242,7 +242,9 @@ async function submitOrder(){
       showSuccess(`주문 접수 완료! 주문번호: ${data.orderId}`);
       document.getElementById('company').value='';
       document.getElementById('phone').value='';
-      tbody.innerHTML=''; addRow(); updateTotal();
+      orderItemsContainer.innerHTML = '';
+      createItemRow();
+      updateTotal();
     }else{
       showError(`응답 형식 오류\n${txt}`);
     }
