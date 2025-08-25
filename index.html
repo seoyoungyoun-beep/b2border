@@ -20,8 +20,80 @@
       font-size:15px; line-height:var(--h); box-sizing:border-box; background:#fff;
     }
     select.control{ -webkit-appearance:none; appearance:none; padding-right:36px; }
-    input[type="number"].control{ text-align:right; }
     input.text-short { max-width:300px; width:100%; }
+
+    /* 수량 입력 컨테이너 */
+    .qty-container {
+      display: flex;
+      align-items: stretch; /* 모든 자식 요소가 같은 높이를 가지도록 */
+      gap: 0; /* gap을 0으로 설정하여 완전히 붙게 */
+      width: 100%;
+      max-width: 110px; /* 전체 수량 컨테이너 폭 줄임 */
+    }
+    
+    .qty-btn {
+      width: 26px;
+      height: var(--h);
+      border: 1px solid #ddd;
+      background: #f8f9fa;
+      color: #495057;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: all 0.15s ease;
+      box-sizing: border-box; /* 박스 사이징 명시 */
+    }
+    
+    .qty-btn:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+    }
+    
+    .qty-btn:active {
+      background: #dee2e6;
+    }
+    
+    .qty-btn.minus {
+      border-radius: var(--radius) 0 0 var(--radius);
+    }
+    
+    .qty-btn.plus {
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    
+    .qty-input {
+      flex: 1;
+      height: var(--h);
+      border: 1px solid #ddd;
+      border-left: none;
+      border-right: none;
+      text-align: center;
+      font-size: 15px;
+      background: #fff;
+      min-width: 40px;
+      box-sizing: border-box; /* 박스 사이징 명시 */
+      line-height: normal; /* 라인 높이 초기화 */
+      padding: 0; /* 패딩 제거 */
+      -webkit-appearance: none; /* webkit 스핀 버튼 제거 */
+      -moz-appearance: textfield; /* Firefox 스핀 버튼 제거 */
+    }
+    
+    /* Chrome, Safari, Edge의 number input 스핀 버튼 숨기기 */
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    .qty-input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
 
     .table-wrap{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
     table{ width:100%; border-collapse:collapse; min-width:520px; table-layout:fixed; }
@@ -29,17 +101,24 @@
     th{ background:#fafafa; font-weight:600 }
 
     /* 데스크탑: 3열 유지 (제품명/수량/삭제) */
-    #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:64%; }
-    #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:28%; }
-    #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:8%;  text-align:center; }
+    #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:65%; }
+    #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:25%; }
+    #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:10%;  text-align:center; }
 
     .btn{
       appearance:none; border:none; border-radius:var(--radius);
       height:var(--h); padding:0 14px; cursor:pointer; font-weight:700; font-size:15px; line-height:var(--h);
+      display: inline-flex; align-items: center; justify-content: center;
     }
     .btn-primary{ background:#111; color:#fff }
     .btn-secondary{ background:#f1f3f5; color:#111 }
-    .btn-danger{ background:#ffe3e3; color:#c92a2a } /* 행 삭제 버튼도 동일 높이/라운딩 */
+    .btn-danger{ 
+      background:#ffe3e3; 
+      color:#c92a2a;
+      min-width: 60px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
 
     .row-actions{ display:flex; gap:var(--gap); align-items:center; justify-content:space-between; margin-top:14px }
     .success,.error{ padding:12px 14px;border-radius:var(--radius);margin-top:12px;font-size:14px;line-height:1.5 }
@@ -50,10 +129,6 @@
     .item-select { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .item-custom { display:none; height:var(--h); }
 
-    /* 수량 입력 고정폭 (데스크탑) */
-    #itemsTable td:nth-child(2){ white-space:nowrap; }
-    #itemsTable input[type="number"]{ width:84px; min-width:84px; max-width:84px; }
-
     /* ✅ 모바일(≤640px): 카드형 전환으로 삭제 버튼 항상 보이게 */
     @media (max-width:640px){
       /* 테이블 헤더 숨기고 행을 카드처럼 2줄로 */
@@ -61,11 +136,13 @@
       table#itemsTable{ min-width:0 !important; } /* 넘침 방지 */
       #itemsTable tr{
         display:grid !important;
-        grid-template-columns: 1fr 72px; /* 우측 삭제 고정 */
+        grid-template-columns: 1fr 80px; /* 우측 삭제 고정 */
         gap:8px 10px;
         grid-template-areas:
           "name del"
           "qty  qty";
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
       }
       #itemsTable td{ border-bottom:0; padding:0; }
       #itemsTable td:nth-child(1){ grid-area:name; }
@@ -75,15 +152,25 @@
       /* 컨트롤 폭 */
       .item-cell .item-select,
       .item-cell .item-custom { width:100%; }
-      #itemsTable input[type="number"]{ width:100% !important; min-width:0; }
 
       /* 삭제 버튼 컴팩트 */
       .btn-danger{
-        min-width:72px;
-        padding:0 10px;
+        min-width:70px;
+        padding:0 8px;
         height:var(--h);
         border-radius:var(--radius);
         white-space:nowrap;
+        font-size: 14px;
+      }
+      
+      /* 모바일에서 수량 컨테이너 조정 */
+      .qty-container {
+        max-width: 100px;
+      }
+      
+      .qty-btn {
+        width: 22px;
+        font-size: 13px;
       }
     }
   </style>
@@ -100,7 +187,7 @@
     <input id="company" class="control text-short" placeholder="(예시) 빈브라더스 앨리웨이 인천점" />
 
     <!-- 2. 품목 -->
-    <label>2) 주문하시는 품목을 입력해 주세요. <span class="hint">(‘+ 품목 추가’로 복수 입력 가능)</span></label>
+    <label>2) 주문하시는 품목을 입력해 주세요. <span class="hint">('+ 품목 추가'로 복수 입력 가능)</span></label>
     <div class="table-wrap">
       <table id="itemsTable">
         <thead>
@@ -150,6 +237,57 @@ document.addEventListener('DOMContentLoaded', () => {
     return s;
   }
 
+  function createQtyContainer() {
+    const container = document.createElement('div');
+    container.className = 'qty-container';
+    
+    const minusBtn = document.createElement('button');
+    minusBtn.type = 'button';
+    minusBtn.className = 'qty-btn minus';
+    minusBtn.textContent = '−';
+    
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.value = '0';
+    input.className = 'qty-input';
+    
+    const plusBtn = document.createElement('button');
+    plusBtn.type = 'button';
+    plusBtn.className = 'qty-btn plus';
+    plusBtn.textContent = '+';
+    
+    // 이벤트 리스너
+    minusBtn.addEventListener('click', () => {
+      const currentValue = parseInt(input.value) || 0;
+      if (currentValue > 0) {
+        input.value = currentValue - 1;
+        updateTotal();
+      }
+    });
+    
+    plusBtn.addEventListener('click', () => {
+      const currentValue = parseInt(input.value) || 0;
+      input.value = currentValue + 1;
+      updateTotal();
+    });
+    
+    input.addEventListener('input', updateTotal);
+    input.addEventListener('change', () => {
+      // 음수나 소수점 방지
+      const value = parseInt(input.value) || 0;
+      if (value < 0) input.value = 0;
+      else input.value = value;
+      updateTotal();
+    });
+    
+    container.appendChild(minusBtn);
+    container.appendChild(input);
+    container.appendChild(plusBtn);
+    
+    return container;
+  }
+
   function addRow(){
     const tr=document.createElement('tr');
 
@@ -161,17 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
     custom.type='text'; custom.placeholder='싱글 오리진 제품명'; custom.className='control item-custom';
     tdItem.append(selItem, custom);
 
-    // 2) 수량 (항상 빈 칸 보이기)
+    // 2) 수량 (개선된 +/- 버튼)
     const tdQty=document.createElement('td');
-    const qty=document.createElement('input'); 
-    qty.type='number'; qty.min='1'; qty.placeholder='0'; 
-    qty.className='control';
-    qty.addEventListener('input', updateTotal);
-    tdQty.appendChild(qty);
+    const qtyContainer = createQtyContainer();
+    tdQty.appendChild(qtyContainer);
 
     // 3) 삭제
     const tdDel=document.createElement('td');
-    const del=document.createElement('button'); del.textContent='삭제'; del.className='btn btn-danger';
+    const del=document.createElement('button'); 
+    del.textContent='삭제'; 
+    del.className='btn btn-danger';
     tdDel.appendChild(del);
 
     tr.append(tdItem, tdQty, tdDel);
@@ -188,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateTotal(){
     let t=0;
-    [...tbody.querySelectorAll('input[type="number"]')].forEach(i=>{
+    [...tbody.querySelectorAll('.qty-input')].forEach(i=>{
       const v=parseInt(i.value||'0',10); if(v>0) t+=v;
     });
     totalQtyText.textContent = `총 수량: ${t}개`;
@@ -214,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     [...tbody.querySelectorAll('tr')].forEach(r=>{
       const base=r.children[0].querySelector('select').value;
       const custom=r.children[0].querySelector('.item-custom');
-      const qty=parseInt(r.children[1].querySelector('input').value||'0',10);
+      const qty=parseInt(r.children[1].querySelector('.qty-input').value||'0',10);
       if(qty>0){
         const name=base.includes('싱글 오리진')?(custom.value.trim()||'싱글 오리진'):base;
         items.push({item:name, qty});
