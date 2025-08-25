@@ -360,24 +360,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if(items.length===0){showError('최소 1개 이상 입력해주세요.');return;}
 
     submitBtn.disabled=true; submitBtn.textContent='주문 제출 중...';
-    const payload={company, phone, items};
 
-    try{
-      const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      const txt=await res.text();
-      if(!res.ok){ showError(`요청 실패 (HTTP ${res.status})\n${txt}`); return; }
-      let data=null; try{ data=JSON.parse(txt);}catch(_){}
-      if(data && data.ok){
-        showSuccess(`주문 접수 완료! 주문번호: ${data.orderId}`);
-        document.getElementById('company').value=''; document.getElementById('phone').value='';
-        tbody.innerHTML=''; addRow(); updateTotal();
-      }else{
-        showError(`응답 형식 오류\n${txt}`);
-      }
-    }catch(e){
-      showError(`네트워크 오류: ${e.message}`);
-    }finally{
-      submitBtn.disabled=false; submitBtn.textContent='주문 제출';
+    // Form 방식으로 전송 (CORS 우회)
+    try {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = WEB_APP_URL;
+      form.target = '_blank'; // 새 창에서 열기
+      
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'data';
+      input.value = JSON.stringify({company, phone, items});
+      
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      
+      showSuccess(`주문이 제출되었습니다! 새 창에서 결과를 확인하세요.`);
+      document.getElementById('company').value=''; 
+      document.getElementById('phone').value='';
+      tbody.innerHTML=''; 
+      addRow(); 
+      updateTotal();
+      
+    } catch(e) {
+      showError(`오류 발생: ${e.message}`);
+    } finally {
+      submitBtn.disabled=false; 
+      submitBtn.textContent='주문 제출';
     }
   }
 
