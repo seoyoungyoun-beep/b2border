@@ -5,13 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>[빈브라더스] 도매 파트너 주문서</title>
   <style>
-    :root { --gap: 12px; --radius: 12px; --h: 44px; } /* 통일 높이 */
+    :root { --gap: 12px; --radius: 12px; --h: 44px; }
     body { font-family: system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Helvetica,Arial,sans-serif; margin:0; background:#fafafa; color:#111; }
     .container { max-width:720px; margin:24px auto; padding:24px; background:#fff; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
     h1 { margin:0 0 8px; font-size:22px }
     .top-notice { margin: 4px 0 18px; color:#444; font-size:14px; line-height:1.6; white-space:pre-line; }
     label { font-size:14px; color:#222; display:block; margin:16px 0 6px; font-weight:600 }
     .hint { color:#666; font-size:13px; margin-top:2px; }
+
+    /* 카테고리 섹션 */
+    .category-section {
+      margin: 24px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #e9ecef;
+    }
+    .category-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+      margin: 0 0 12px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #dee2e6;
+    }
 
     /* 통일 컨트롤 스타일 */
     .control {
@@ -84,12 +101,11 @@
     .table-wrap{ width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
     table{ width:100%; border-collapse:collapse; min-width:520px; table-layout:fixed; }
     th,td{ padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; vertical-align:middle }
-    th{ background:#fafafa; font-weight:600 }
+    th{ background:#fff; font-weight:600 }
 
-    /* 데스크탑: 3열 유지 (제품명/수량/삭제) */
-    #itemsTable th:nth-child(1), #itemsTable td:nth-child(1){ width:58%; }
-    #itemsTable th:nth-child(2), #itemsTable td:nth-child(2){ width:32%; }
-    #itemsTable th:nth-child(3), #itemsTable td:nth-child(3){ width:10%;  text-align:center; }
+    table th:nth-child(1), table td:nth-child(1){ width:58%; }
+    table th:nth-child(2), table td:nth-child(2){ width:32%; }
+    table th:nth-child(3), table td:nth-child(3){ width:10%;  text-align:center; }
 
     .btn{
       appearance:none; border:none; border-radius:var(--radius);
@@ -97,7 +113,7 @@
       display: inline-flex; align-items: center; justify-content: center;
     }
     .btn-primary{ background:#111; color:#fff }
-    .btn-secondary{ background:#f1f3f5; color:#111 }
+    .btn-secondary{ background:#fff; color:#111; border: 1px solid #ddd; }
     .btn-danger{ 
       background:#ffe3e3; 
       color:#c92a2a;
@@ -107,22 +123,33 @@
     }
 
     .row-actions{ display:flex; gap:var(--gap); align-items:center; justify-content:space-between; margin-top:14px }
+    .category-qty { font-size: 14px; color: #666; font-weight: 600; }
+    
+    .total-summary {
+      margin: 24px 0;
+      padding: 16px 20px;
+      background: #111;
+      color: #fff;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+    }
+    
     .success,.error{ padding:12px 14px;border-radius:var(--radius);margin-top:12px;font-size:14px;line-height:1.5 }
     .success{ background:#e6fcf5;color:#087f5b } .error{ background:#fff5f5;color:#c92a2a }
 
-    /* 제품명 셀 내부 */
     .item-cell { display:flex; flex-direction:column; gap:6px; }
     .item-select { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .item-custom { display:none; height:var(--h); }
 
-    /* ✅ 모바일(≤640px): 카드형 전환으로 삭제 버튼 항상 보이게 */
     @media (max-width:640px){
-      /* 테이블 헤더 숨기고 행을 카드처럼 2줄로 */
-      #itemsTable thead{ display:none !important; }
-      table#itemsTable{ min-width:0 !important; } /* 넘침 방지 */
-      #itemsTable tr{
+      .category-section { padding: 16px; }
+      table thead{ display:none !important; }
+      table{ min-width:0 !important; }
+      table tr{
         display:grid !important;
-        grid-template-columns: 1fr 80px; /* 우측 삭제 고정 */
+        grid-template-columns: 1fr 80px;
         gap:8px 10px;
         grid-template-areas:
           "name del"
@@ -130,16 +157,14 @@
         padding: 12px 0;
         border-bottom: 1px solid #eee;
       }
-      #itemsTable td{ border-bottom:0; padding:0; }
-      #itemsTable td:nth-child(1){ grid-area:name; }
-      #itemsTable td:nth-child(2){ grid-area:qty; }
-      #itemsTable td:nth-child(3){ grid-area:del; text-align:center; }
+      table td{ border-bottom:0; padding:0; }
+      table td:nth-child(1){ grid-area:name; }
+      table td:nth-child(2){ grid-area:qty; }
+      table td:nth-child(3){ grid-area:del; text-align:center; }
 
-      /* 컨트롤 폭 */
       .item-cell .item-select,
       .item-cell .item-custom { width:100%; }
 
-      /* 삭제 버튼 컴팩트 */
       .btn-danger{
         min-width:70px;
         padding:0 8px;
@@ -149,7 +174,6 @@
         font-size: 14px;
       }
       
-      /* 모바일에서 수량 컨테이너 조정 */
       .qty-container {
         max-width: 100px;
       }
@@ -173,20 +197,78 @@
     <input id="company" class="control text-short" placeholder="(예시) 빈브라더스 앨리웨이 인천점" />
 
     <!-- 2. 품목 -->
-    <label>2) 주문하시는 품목을 입력해 주세요. <span class="hint">('+ 품목 추가'로 복수 입력 가능)</span></label>
-    <div class="table-wrap">
-      <table id="itemsTable">
-        <thead>
-          <tr><th>제품명</th><th>수량</th><th>삭제</th></tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
+    <label>2) 주문하시는 품목을 입력해 주세요.</label>
+
+    <!-- 카테고리 1: 제조용 원두/콜드브루 -->
+    <div class="category-section">
+      <div class="category-title">제조용 원두 / 콜드브루</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>제품명</th><th>수량</th><th>삭제</th></tr>
+          </thead>
+          <tbody id="tbody-beans"></tbody>
+        </table>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="btn btn-secondary add-row-btn" data-category="beans">+ 품목 추가</button>
+        <span class="category-qty" id="qty-beans">수량: 0개</span>
+      </div>
     </div>
 
-    <div class="row-actions">
-      <button type="button" id="addRow" class="btn btn-secondary">+ 품목 추가</button>
-      <span id="totalQtyText">총 수량: 0개</span>
+    <!-- 카테고리 2: 드립백/캡슐 -->
+    <div class="category-section">
+      <div class="category-title">드립백 / 캡슐</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>제품명</th><th>수량</th><th>삭제</th></tr>
+          </thead>
+          <tbody id="tbody-drip"></tbody>
+        </table>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="btn btn-secondary add-row-btn" data-category="drip">+ 품목 추가</button>
+        <span class="category-qty" id="qty-drip">수량: 0개</span>
+      </div>
     </div>
+
+    <!-- 카테고리 3: 종이컵 -->
+    <div class="category-section">
+      <div class="category-title">종이컵</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>제품명</th><th>수량</th><th>삭제</th></tr>
+          </thead>
+          <tbody id="tbody-cup"></tbody>
+        </table>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="btn btn-secondary add-row-btn" data-category="cup">+ 품목 추가</button>
+        <span class="category-qty" id="qty-cup">수량: 0개</span>
+      </div>
+    </div>
+
+    <!-- 카테고리 4: 기타 -->
+    <div class="category-section">
+      <div class="category-title">기타</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>제품명</th><th>수량</th><th>삭제</th></tr>
+          </thead>
+          <tbody id="tbody-etc"></tbody>
+        </table>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="btn btn-secondary add-row-btn" data-category="etc">+ 품목 추가</button>
+        <span class="category-qty" id="qty-etc">수량: 0개</span>
+      </div>
+    </div>
+
+    <!-- 전체 총 수량 -->
+    <div class="total-summary" id="totalQtyText">전체 총 수량: 0개</div>
 
     <!-- 3. 연락처 -->
     <label for="phone">3) 연락처를 남겨 주세요.</label>
@@ -205,18 +287,50 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const ITEMS = [
-    "[원두] 블랙수트_1kg","[원두] 벨벳화이트_1kg","[원두] 세븐티_1kg",
-    "[원두] 몰트_1kg","[원두] 매트_1kg",
-    "[원두] 디카페인_ 미디엄로스트_1kg","[원두] 디카페인_ 다크 로스트_1kg",
-    "[콜드브루] 블랙수트(고농도)_1L","[콜드브루] 블랙수트(중농도)_500ml",
-    "[콜드브루] 디카페인(고농도)_1L","[콜드브루] 벨벳화이트(중농도)_500ml",
-    "[콜드브루] 디카페인(중농도)_500ml","[콜드브루] 블랙수트 RTD_235ml",
-    "[기타] 싱글 오리진_(제품명 변경)"
-  ];
+  // 카테고리별 제품 목록
+  const PRODUCTS = {
+    beans: [
+      "[원두] 블랙수트_1kg",
+      "[원두] 벨벳화이트_1kg",
+      "[원두] 세븐티_1kg",
+      "[원두] 몰트_1kg",
+      "[원두] 매트_1kg",
+      "[원두] 디카페인_ 미디엄로스트_1kg",
+      "[원두] 디카페인_ 다크 로스트_1kg",
+      "[콜드브루] 블랙수트(고농도)_1L",
+      "[콜드브루] 블랙수트(중농도)_500ml",
+      "[콜드브루] 디카페인(고농도)_1L",
+      "[콜드브루] 벨벳화이트(중농도)_500ml",
+      "[콜드브루] 디카페인(중농도)_500ml",
+      "[콜드브루] 블랙수트 RTD_235ml",
+      "[원두] 블랙수트 200g"
+    ],
+    drip: [
+      "[드립백] 블랙수트 8개입",
+      "[드립백] 벨벳화이트 8개입",
+      "[드립백] 디카페인 8개입",
+      "[드립백] 블랙수트 & 벨벳화이트 20개입",
+      "[드립백] 블렌드 & 싱글 20개입",
+      "[드립백] 디스커버리 세트 16개입",
+      "[캡슐] 블랙수트 10개입",
+      "[캡슐] 벨벳화이트 10개입",
+      "[캡슐] 디카페인 10개입",
+      "쇼핑백 (소)"
+    ],
+    cup: [
+      "이중컵 10oz_(1box/500ea)",
+      "이중컵 13oz_(1box/500ea)",
+      "이중컵 16oz_(1box/500ea)",
+      "[리드] 아이스 리드 10/13oz_(1box/1,000ea)",
+      "[리드] 핫 리드 10/13oz_(1box/1,000ea)"
+    ],
+    etc: [
+      "[기타] 제품명 입력 (싱글 오리진 등)"
+    ]
+  };
+
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYtmwo0BbBdouvMiQwlkp9dtAL5p0dIb2RIKDyQFn0pUtmugX3QJbGTugaKtk-Y_wTRQ/exec";
 
-  const tbody = document.getElementById('tbody');
   const submitBtn = document.getElementById('submitBtn');
   const totalQtyText = document.getElementById('totalQtyText');
 
@@ -237,26 +351,24 @@ document.addEventListener('DOMContentLoaded', () => {
     minusBtn.textContent = '−';
     
     const input = document.createElement('input');
-    input.type = 'text'; // number 대신 text로 변경
+    input.type = 'text';
     input.value = '0';
     input.className = 'qty-input';
-    input.inputMode = 'numeric'; // 모바일에서 숫자 키패드 표시
-    input.pattern = '[0-9]*'; // 숫자만 허용 패턴
+    input.inputMode = 'numeric';
+    input.pattern = '[0-9]*';
     
     const plusBtn = document.createElement('button');
     plusBtn.type = 'button';
     plusBtn.className = 'qty-btn plus';
     plusBtn.textContent = '+';
     
-    // 숫자만 입력 허용
     input.addEventListener('input', (e) => {
-      let value = e.target.value.replace(/[^0-9]/g, ''); // 숫자가 아닌 문자 제거
+      let value = e.target.value.replace(/[^0-9]/g, '');
       if (value === '') value = '0';
       e.target.value = parseInt(value) || 0;
       updateTotal();
     });
     
-    // 이벤트 리스너
     minusBtn.addEventListener('click', () => {
       const currentValue = parseInt(input.value) || 0;
       if (currentValue > 0) {
@@ -278,35 +390,41 @@ document.addEventListener('DOMContentLoaded', () => {
     return container;
   }
 
-  function addRow(){
-    const tr=document.createElement('tr');
+  function addRow(category){
+    const tbody = document.getElementById(`tbody-${category}`);
+    const tr = document.createElement('tr');
 
-    // 1) 제품명 (드롭다운 + 싱글오리진 커스텀 입력)
-    const tdItem=document.createElement('td');
-    tdItem.className='item-cell';
-    const selItem=makeSelect(ITEMS);
-    const custom=document.createElement('input');
-    custom.type='text'; custom.placeholder='싱글 오리진 제품명'; custom.className='control item-custom';
+    // 1) 제품명
+    const tdItem = document.createElement('td');
+    tdItem.className = 'item-cell';
+    const selItem = makeSelect(PRODUCTS[category]);
+    const custom = document.createElement('input');
+    custom.type = 'text'; 
+    custom.placeholder = '제품명 직접 입력'; 
+    custom.className = 'control item-custom';
     tdItem.append(selItem, custom);
 
-    // 2) 수량 (개선된 +/- 버튼)
-    const tdQty=document.createElement('td');
+    // 2) 수량
+    const tdQty = document.createElement('td');
     const qtyContainer = createQtyContainer();
     tdQty.appendChild(qtyContainer);
 
     // 3) 삭제
-    const tdDel=document.createElement('td');
-    const del=document.createElement('button'); 
-    del.textContent='삭제'; 
-    del.className='btn btn-danger';
+    const tdDel = document.createElement('td');
+    const del = document.createElement('button'); 
+    del.textContent = '삭제'; 
+    del.className = 'btn btn-danger';
     tdDel.appendChild(del);
 
     tr.append(tdItem, tdQty, tdDel);
     tbody.appendChild(tr);
 
     function handleChange(){
-      if(selItem.value.includes('싱글 오리진')) custom.style.display='block';
-      else custom.style.display='none';
+      if(selItem.value.includes('제품명 입력') || selItem.value.includes('싱글 오리진')) {
+        custom.style.display = 'block';
+      } else {
+        custom.style.display = 'none';
+      }
     }
     selItem.addEventListener('change', handleChange);
     handleChange();
@@ -314,50 +432,87 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateTotal(){
-    let t=0;
-    [...tbody.querySelectorAll('.qty-input')].forEach(i=>{
-      const v=parseInt(i.value||'0',10); if(v>0) t+=v;
+    let totalAll = 0;
+    
+    // 각 카테고리별 수량 계산
+    ['beans', 'drip', 'cup', 'etc'].forEach(cat => {
+      const tbody = document.getElementById(`tbody-${cat}`);
+      let catTotal = 0;
+      [...tbody.querySelectorAll('.qty-input')].forEach(i => {
+        const v = parseInt(i.value || '0', 10);
+        if (v > 0) catTotal += v;
+      });
+      document.getElementById(`qty-${cat}`).textContent = `수량: ${catTotal}개`;
+      totalAll += catTotal;
     });
-    totalQtyText.textContent = `총 수량: ${t}개`;
+    
+    totalQtyText.textContent = `전체 총 수량: ${totalAll}개`;
   }
 
-  // 이벤트 위임: 동적으로 추가된 버튼도 동작
-  document.addEventListener('click', (e)=>{
-    const add = e.target.closest('#addRow');
-    if(add){ e.preventDefault(); addRow(); }
-    const del = e.target.closest('.btn-danger');
-    if(del){ e.preventDefault(); const tr=del.closest('tr'); if(tr) tr.remove(); updateTotal(); }
+  // 이벤트 위임
+  document.addEventListener('click', (e) => {
+    const addBtn = e.target.closest('.add-row-btn');
+    if(addBtn){ 
+      e.preventDefault(); 
+      const category = addBtn.getAttribute('data-category');
+      addRow(category); 
+    }
+    
+    const delBtn = e.target.closest('.btn-danger');
+    if(delBtn){ 
+      e.preventDefault(); 
+      const tr = delBtn.closest('tr'); 
+      if(tr) tr.remove(); 
+      updateTotal(); 
+    }
   });
 
-  // 첫 행
-  addRow();
+  // 각 카테고리 첫 행 추가
+  ['beans', 'drip', 'cup', 'etc'].forEach(cat => addRow(cat));
 
   async function submitOrder(){
-    const company=document.getElementById('company').value.trim();
-    const phone=document.getElementById('phone').value.trim();
-    const request=document.getElementById('request').value.trim();
-    if(!company||!phone){showError('매장명과 연락처를 입력해주세요.');return;}
+    const company = document.getElementById('company').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const request = document.getElementById('request').value.trim();
+    
+    if(!company || !phone){
+      showError('매장명과 연락처를 입력해주세요.');
+      return;
+    }
 
-    const items=[];
-    [...tbody.querySelectorAll('tr')].forEach(r=>{
-      const base=r.children[0].querySelector('select').value;
-      const custom=r.children[0].querySelector('.item-custom');
-      const qty=parseInt(r.children[1].querySelector('.qty-input').value||'0',10);
-      if(qty>0){
-        const name=base.includes('싱글 오리진')?(custom.value.trim()||'싱글 오리진'):base;
-        items.push({item:name, qty});
-      }
+    const items = [];
+    
+    // 모든 카테고리의 아이템 수집
+    ['beans', 'drip', 'cup', 'etc'].forEach(cat => {
+      const tbody = document.getElementById(`tbody-${cat}`);
+      [...tbody.querySelectorAll('tr')].forEach(r => {
+        const base = r.children[0].querySelector('select').value;
+        const custom = r.children[0].querySelector('.item-custom');
+        const qty = parseInt(r.children[1].querySelector('.qty-input').value || '0', 10);
+        
+        if(qty > 0){
+          let name = base;
+          if(base.includes('제품명 입력') || base.includes('싱글 오리진')){
+            name = custom.value.trim() || base;
+          }
+          items.push({item: name, qty: qty});
+        }
+      });
     });
-    if(items.length===0){showError('최소 1개 이상 입력해주세요.');return;}
+    
+    if(items.length === 0){
+      showError('최소 1개 이상 입력해주세요.');
+      return;
+    }
 
-    submitBtn.disabled=true; submitBtn.textContent='주문 제출 중...';
+    submitBtn.disabled = true; 
+    submitBtn.textContent = '주문 제출 중...';
 
-    // Form 방식으로 전송 (CORS 우회)
     try {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = WEB_APP_URL;
-      form.target = '_blank'; // 새 창에서 열기
+      form.target = '_blank';
       
       const input = document.createElement('input');
       input.type = 'hidden';
@@ -370,28 +525,33 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.removeChild(form);
       
       showSuccess(`주문이 제출되었습니다! 새 창에서 결과를 확인하세요.`);
-      document.getElementById('company').value=''; 
-      document.getElementById('phone').value='';
-      document.getElementById('request').value='';
-      tbody.innerHTML=''; 
-      addRow(); 
+      
+      // 폼 초기화
+      document.getElementById('company').value = ''; 
+      document.getElementById('phone').value = '';
+      document.getElementById('request').value = '';
+      
+      ['beans', 'drip', 'cup', 'etc'].forEach(cat => {
+        document.getElementById(`tbody-${cat}`).innerHTML = '';
+        addRow(cat);
+      });
+      
       updateTotal();
       
     } catch(e) {
       showError(`오류 발생: ${e.message}`);
     } finally {
-      submitBtn.disabled=false; 
-      submitBtn.textContent='주문 제출';
+      submitBtn.disabled = false; 
+      submitBtn.textContent = '주문 제출';
     }
   }
 
   function showSuccess(t){document.getElementById('msg').innerHTML=`<div class='success'>${t}</div>`;}
   function showError(t){document.getElementById('msg').innerHTML=`<div class='error'>${t}</div>`;}
   
-  // 전화번호 실시간 검증
   document.getElementById('phone').addEventListener('blur', function() {
     const phone = this.value.trim();
-    if(phone && !validatePhone(phone)) {
+    if(phone && !/^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/.test(phone)) {
       showError('올바른 전화번호를 입력해주세요. (예: 010-1234-5678)');
       this.style.borderColor = '#c92a2a';
     } else {
@@ -400,7 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // 입력 시 테두리 색상 초기화
   document.getElementById('phone').addEventListener('input', function() {
     this.style.borderColor = '#ddd';
     document.getElementById('msg').innerHTML = '';
