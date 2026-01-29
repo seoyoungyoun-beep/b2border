@@ -139,17 +139,64 @@
     .success,.error{ padding:12px 14px;border-radius:var(--radius);margin-top:12px;font-size:14px;line-height:1.5 }
     .success{ background:#e6fcf5;color:#087f5b } .error{ background:#fff5f5;color:#c92a2a }
 
+    /* 플로팅 제출 버튼 */
+    .floating-submit {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      padding: 12px 16px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .floating-submit .btn-primary {
+      flex: 1;
+      max-width: 400px;
+    }
+    
+    .floating-total {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+      white-space: nowrap;
+    }
+    
+    /* 플로팅 버튼 공간 확보 */
+    body {
+      padding-bottom: 80px;
+    }
+
     .item-cell { display:flex; flex-direction:column; gap:6px; }
     .item-select { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .item-custom { display:none; height:var(--h); }
 
     @media (max-width:640px){
       .category-section { padding: 16px; }
+      
+      /* 플로팅 버튼 모바일 최적화 */
+      .floating-submit {
+        padding: 10px 12px;
+      }
+      
+      .floating-total {
+        font-size: 14px;
+      }
+      
+      body {
+        padding-bottom: 70px;
+      }
+      
       table thead{ display:none !important; }
       table{ min-width:0 !important; }
       table tr{
         display:grid !important;
-        grid-template-columns: 1fr 80px;
+        grid-template-columns: 1fr 60px;
         gap:8px 10px;
         grid-template-areas:
           "name del"
@@ -166,21 +213,25 @@
       .item-cell .item-custom { width:100%; }
 
       .btn-danger{
-        min-width:70px;
-        padding:0 8px;
+        min-width:60px;
+        padding:0 6px;
         height:var(--h);
         border-radius:var(--radius);
         white-space:nowrap;
-        font-size: 14px;
+        font-size: 13px;
       }
       
       .qty-container {
-        max-width: 100px;
+        max-width: 80px;
       }
       
       .qty-btn {
-        width: 22px;
+        width: 20px;
         font-size: 13px;
+      }
+      
+      .qty-input {
+        min-width: 40px;
       }
     }
   </style>
@@ -196,8 +247,12 @@
     <label for="company">1) 매장 이름을 넣어주세요.</label>
     <input id="company" class="control text-short" placeholder="(예시) 빈브라더스 앨리웨이 인천점" />
 
-    <!-- 2. 품목 -->
-    <label>2) 주문하시는 품목을 입력해 주세요.</label>
+    <!-- 2. 연락처 -->
+    <label for="phone">2) 연락처를 남겨 주세요.</label>
+    <input id="phone" class="control text-short" type="tel" inputmode="tel" placeholder="010-1234-5678" />
+
+    <!-- 3. 품목 -->
+    <label>3) 주문하시는 품목을 입력해 주세요.</label>
 
     <!-- 카테고리 1: 제조용 원두/콜드브루 -->
     <div class="category-section">
@@ -267,22 +322,20 @@
       </div>
     </div>
 
-    <!-- 전체 총 수량 -->
-    <div class="total-summary" id="totalQtyText">전체 총 수량: 0개</div>
-
-    <!-- 3. 연락처 -->
-    <label for="phone">3) 연락처를 남겨 주세요.</label>
-    <input id="phone" class="control text-short" type="tel" inputmode="tel" placeholder="010-1234-5678" />
+    <!-- 총 수량 -->
+    <div class="total-summary" id="totalQtyText">총 수량: 0개</div>
 
     <!-- 4. 추가요청사항 -->
-    <label for="request">4) 추가요청사항이 있으시면 남겨주세요. <span class="hint">(선택사항)</span></label>
+    <label for="request">4) 추가 요청사항이 있으면 남겨주세요. <span class="hint">(선택)</span></label>
     <textarea id="request" class="control" rows="3" placeholder="긴급 배송 요청 등" style="height: auto; padding: 12px 14px; resize: vertical; line-height: 1.4;"></textarea>
 
-    <div style="margin-top:12px">
-      <button type="button" id="submitBtn" class="btn btn-primary">주문 제출</button>
-    </div>
-
     <div id="msg"></div>
+  </div>
+
+  <!-- 플로팅 제출 버튼 -->
+  <div class="floating-submit">
+    <span class="floating-total" id="floatingTotal">총 0개</span>
+    <button type="button" id="floatingSubmitBtn" class="btn btn-primary">주문 제출</button>
   </div>
 
 <script>
@@ -331,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYtmwo0BbBdouvMiQwlkp9dtAL5p0dIb2RIKDyQFn0pUtmugX3QJbGTugaKtk-Y_wTRQ/exec";
 
-  const submitBtn = document.getElementById('submitBtn');
   const totalQtyText = document.getElementById('totalQtyText');
 
   function makeSelect(list){
@@ -446,7 +498,8 @@ document.addEventListener('DOMContentLoaded', () => {
       totalAll += catTotal;
     });
     
-    totalQtyText.textContent = `전체 총 수량: ${totalAll}개`;
+    totalQtyText.textContent = `총 수량: ${totalAll}개`;
+    document.getElementById('floatingTotal').textContent = `총 ${totalAll}개`;
   }
 
   // 이벤트 위임
@@ -505,8 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    submitBtn.disabled = true; 
-    submitBtn.textContent = '주문 제출 중...';
+    const floatingBtn = document.getElementById('floatingSubmitBtn');
+    floatingBtn.disabled = true;
+    floatingBtn.textContent = '제출 중...';
 
     try {
       const form = document.createElement('form');
@@ -541,8 +595,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {
       showError(`오류 발생: ${e.message}`);
     } finally {
-      submitBtn.disabled = false; 
-      submitBtn.textContent = '주문 제출';
+      floatingBtn.disabled = false;
+      floatingBtn.textContent = '주문 제출';
     }
   }
 
@@ -565,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('msg').innerHTML = '';
   });
   
-  document.getElementById('submitBtn').addEventListener('click', submitOrder);
+  document.getElementById('floatingSubmitBtn').addEventListener('click', submitOrder);
 });
 </script>
 </body>
