@@ -532,7 +532,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemsText = items.map(it => `${it.item}:${it.qty}`).join('|');
     const combined = `${company}|${phone}|${itemsText}`;
     // 간단한 해시 (실제로는 더 복잡한 해시 함수 사용 가능)
-    return btoa(combined).substring(0, 32);
+    const utf8 = new TextEncoder().encode(combined);
+    let binary = '';
+    utf8.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary).substring(0, 32);
   }
 
   async function submitOrder(){
