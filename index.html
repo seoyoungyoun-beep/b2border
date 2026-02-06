@@ -386,6 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYtmwo0BbBdouvMiQwlkp9dtAL5p0dIb2RIKDyQFn0pUtmugX3QJbGTugaKtk-Y_wTRQ/exec";
 
   const totalQtyText = document.getElementById('totalQtyText');
+  
+  // 🔒 제출 중 플래그
+  let isSubmitting = false;
 
   function makeSelect(list){
     const s=document.createElement('select');
@@ -524,7 +527,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // 각 카테고리 첫 행 추가
   ['beans', 'drip', 'cup', 'etc'].forEach(cat => addRow(cat));
 
+  // 🔒 주문 고유 ID 생성
+  function generateOrderHash(company, phone, items) {
+    const itemsText = items.map(it => `${it.item}:${it.qty}`).join('|');
+    const combined = `${company}|${phone}|${itemsText}`;
+    // 간단한 해시 (실제로는 더 복잡한 해시 함수 사용 가능)
+    return btoa(combined).substring(0, 32);
+  }
+
   async function submitOrder(){
+    // 🔒 이미 제출 중이면 중단
+    if(isSubmitting) {
+      console.log('이미 제출 중입니다');
+      return;
+    }
+    
     const company = document.getElementById('company').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const request = document.getElementById('request').value.trim();
@@ -559,6 +576,29 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    // 🔒 중복 제출 방지: localStorage 확인
+    const orderHash = generateOrderHash(company, phone, items);
+    const lastSubmit = localStorage.getItem('lastOrderSubmit');
+    
+    if(lastSubmit){
+      try {
+        const lastData = JSON.parse(lastSubmit);
+        const hoursSince = (Date.now() - lastData.timestamp) / (1000 * 60 * 60);
+        
+        // 24시간 이내 동일 주문
+        if(hoursSince < 24 && lastData.hash === orderHash){
+          const hoursAgo = Math.floor(hoursSince);
+          if(!confirm(`${hoursAgo}시간 전에 동일한 주문을 하셨습니다.\n다시 주문하시겠습니까?`)){
+            return;
+          }
+        }
+      } catch(e) {
+        console.error('localStorage 파싱 오류:', e);
+      }
+    }
+
+    // 🔒 제출 시작
+    isSubmitting = true;
     const floatingBtn = document.getElementById('floatingSubmitBtn');
     floatingBtn.disabled = true;
     floatingBtn.textContent = '제출 중...';
@@ -579,6 +619,14 @@ document.addEventListener('DOMContentLoaded', () => {
       form.submit();
       document.body.removeChild(form);
       
+      // 🔒 제출 성공 - localStorage에 기록
+      localStorage.setItem('lastOrderSubmit', JSON.stringify({
+        hash: orderHash,
+        timestamp: Date.now(),
+        company: company,
+        phone: phone
+      }));
+      
       showSuccess(`주문이 제출되었습니다! 새 창에서 결과를 확인하세요.`);
       
       // 폼 초기화
@@ -596,6 +644,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) {
       showError(`오류 발생: ${e.message}`);
     } finally {
+      // 🔒 제출 완료
+      isSubmitting = false;
       floatingBtn.disabled = false;
       floatingBtn.textContent = '주문 제출';
     }
