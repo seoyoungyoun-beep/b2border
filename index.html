@@ -579,26 +579,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 🔒 중복 제출 방지: localStorage 확인
-    const orderHash = generateOrderHash(company, phone, items);
-    const lastSubmit = localStorage.getItem('lastOrderSubmit');
-    
-    if(lastSubmit){
-      try {
-        const lastData = JSON.parse(lastSubmit);
-        const hoursSince = (Date.now() - lastData.timestamp) / (1000 * 60 * 60);
-        
-        // 24시간 이내 동일 주문
-        if(hoursSince < 24 && lastData.hash === orderHash){
-          const hoursAgo = Math.floor(hoursSince);
-          if(!confirm(`${hoursAgo}시간 전에 동일한 주문을 하셨습니다.\n다시 주문하시겠습니까?`)){
-            return;
-          }
-        }
-      } catch(e) {
-        console.error('localStorage 파싱 오류:', e);
-      }
-    }
 
     // 🔒 제출 시작
     isSubmitting = true;
