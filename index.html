@@ -1,246 +1,37 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>[빈브라더스] 도매 파트너 주문서</title>
-  <style>
-    :root { --gap: 12px; --radius: 12px; --h: 44px; }
-    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",Helvetica,Arial,sans-serif; margin:0; background:#fafafa; color:#111; padding-bottom: 100px; }
-    .container { max-width:720px; margin:24px auto; padding:24px; background:#fff; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
-    h1 { margin:0 0 8px; font-size:22px }
-    .top-notice { margin: 4px 0 18px; color:#444; font-size:14px; line-height:1.6; white-space:pre-line; }
-    label { font-size:14px; color:#222; display:block; margin:16px 0 6px; font-weight:600 }
-    .category-section { margin: 24px 0; padding: 20px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e9ecef; }
-    .category-title { font-size: 16px; font-weight: 700; color: #111; margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #dee2e6; }
-    .control { width:100%; height:var(--h); padding:0 14px; border:1px solid #ddd; border-radius:var(--radius); font-size:15px; box-sizing:border-box; background:#fff; }
-    .qty-container { display: flex; align-items: center; gap: 4px; width: 100%; }
-    .qty-btn { width: 32px; height: var(--h); border: 1px solid #ddd; background: #f8f9fa; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-    .qty-input { flex: 1; height: var(--h); border: 1px solid #ddd; border-left: none; border-right: none; text-align: center; font-size: 15px; min-width: 50px; }
-    .table-wrap{ width:100%; overflow-x:auto; }
-    table{ width:100%; border-collapse:collapse; min-width:520px; table-layout:fixed; }
-    th,td{ padding:10px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
-    .btn{ border:none; border-radius:var(--radius); height:var(--h); padding:0 14px; cursor:pointer; font-weight:700; display: inline-flex; align-items: center; justify-content: center; }
-    .btn-primary{ background:#111; color:#fff }
-    .btn-primary:disabled { background:#ccc; cursor:not-allowed; }
-    .btn-secondary{ background:#fff; color:#111; border: 1px solid #ddd; }
-    .btn-danger{ background:#ffe3e3; color:#c92a2a; min-width: 60px; }
-    .total-summary { margin: 24px 0; padding: 16px 20px; background: #111; color: #fff; border-radius: 12px; font-size: 18px; font-weight: 700; text-align: center; }
-    .floating-submit { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 12px 16px; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: center; gap: 12px; align-items: center; }
-    .item-cell { display:flex; flex-direction:column; gap:6px; }
-    .item-custom { display:none; margin-top:4px; }
-    #loading-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; z-index:2000; font-weight:bold; }
-    
-    @media (max-width:640px){
-      table thead{ display:none; }
-      table tr{ display:grid; grid-template-columns: 1fr 60px; gap:8px 10px; padding: 12px 0; border-bottom: 1px solid #eee; }
-      .qty-container { max-width: 100px; }
-    }
-  </style>
-</head>
-<body>
-  <div id="loading-overlay">최신 품목 정보를 불러오는 중입니다...</div>
-
-  <div class="container">
-    <h1>[빈브라더스] 도매 파트너 주문서</h1>
-    <div class="top-notice">- 평일 오전 10시까지 주문시 당일 출고됩니다. 나머지 주문 건들은 익일 출고됩니다.
-- 긴급 출고 요청 시, 카톡문의 혹은 전화 주세요. (010 8767 4709)</div>
-
-    <label for="company">1) 매장 이름을 넣어주세요.</label>
-    <input id="company" class="control" placeholder="(예시) 빈브라더스 앨리웨이 인천점" />
-
-    <label for="phone">2) 연락처를 남겨 주세요.</label>
-    <input id="phone" class="control" type="tel" placeholder="010-1234-5678" />
-
-    <label>3) 주문하시는 품목을 입력해 주세요.</label>
-    
-    <div id="category-container">
-      <div class="category-section">
-        <div class="category-title">제조용 원두 / 콜드브루 / 시즈널</div>
-        <div class="table-wrap"><table><tbody id="tbody-beans"></tbody></table></div>
-        <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
-          <button type="button" class="btn btn-secondary add-row-btn" data-category="beans">+ 품목 추가</button>
-          <span class="category-qty" id="qty-beans">수량: 0개</span>
-        </div>
-      </div>
-
-      <div class="category-section">
-        <div class="category-title">드립백 / 캡슐 / MD</div>
-        <div class="table-wrap"><table><tbody id="tbody-drip"></tbody></table></div>
-        <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
-          <button type="button" class="btn btn-secondary add-row-btn" data-category="drip">+ 품목 추가</button>
-          <span class="category-qty" id="qty-drip">수량: 0개</span>
-        </div>
-      </div>
-
-      <div class="category-section">
-        <div class="category-title">종이컵 / 리드</div>
-        <div class="table-wrap"><table><tbody id="tbody-cup"></tbody></table></div>
-        <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
-          <button type="button" class="btn btn-secondary add-row-btn" data-category="cup">+ 품목 추가</button>
-          <span class="category-qty" id="qty-cup">수량: 0개</span>
-        </div>
-      </div>
-
-      <div class="category-section">
-        <div class="category-title">기타</div>
-        <div class="table-wrap"><table><tbody id="tbody-etc"></tbody></table></div>
-        <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
-          <button type="button" class="btn btn-secondary add-row-btn" data-category="etc">+ 품목 추가</button>
-          <span class="category-qty" id="qty-etc">수량: 0개</span>
-        </div>
-      </div>
+<div id="category-container">
+  <div class="category-section">
+    <div class="category-title">원두 / 콜드브루 (이어라운드 & 시즈널)</div>
+    <div class="table-wrap"><table><tbody id="tbody-beans"></tbody></table></div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
+      <button type="button" class="btn btn-secondary add-row-btn" data-category="beans">+ 품목 추가</button>
+      <span class="category-qty" id="qty-beans">수량: 0개</span>
     </div>
-
-    <div class="total-summary" id="totalQtyText">총 수량: 0개</div>
-    <label for="request">4) 추가 요청사항 <span class="hint">(선택)</span></label>
-    <textarea id="request" class="control" rows="3" style="height: auto; padding: 12px;"></textarea>
-    <div id="msg"></div>
   </div>
 
-  <div class="floating-submit">
-    <span class="floating-total" id="floatingTotal">총 0개</span>
-    <button type="button" id="floatingSubmitBtn" class="btn btn-primary" disabled>로딩 중...</button>
+  <div class="category-section">
+    <div class="category-title">MD (드립백 / 캡슐 / 쇼핑백)</div>
+    <div class="table-wrap"><table><tbody id="tbody-drip"></tbody></table></div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
+      <button type="button" class="btn btn-secondary add-row-btn" data-category="drip">+ 품목 추가</button>
+      <span class="category-qty" id="qty-drip">수량: 0개</span>
+    </div>
   </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. 요청하신 구글 웹 앱 URL 적용
-  const PRODUCT_DATA_URL = "https://script.google.com/macros/s/AKfycbycrE01fn3hhowCsQNuXmEBc9xX9ihQCITUoZvSphypuiCBj5HpqDkbUIIv0J0oQ_SU5g/exec";
-  // 제출용 URL (기존 주소 유지)
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYtmwo0BbBdouvMiQwlkp9dtAL5p0dIb2RIKDyQFn0pUtmugX3QJbGTugaKtk-Y_wTRQ/exec";
+  <div class="category-section">
+    <div class="category-title">컵 / 리드</div>
+    <div class="table-wrap"><table><tbody id="tbody-cup"></tbody></table></div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
+      <button type="button" class="btn btn-secondary add-row-btn" data-category="cup">+ 품목 추가</button>
+      <span class="category-qty" id="qty-cup">수량: 0개</span>
+    </div>
+  </div>
 
-  let PRODUCTS = { beans: [], drip: [], cup: [], etc: [] };
-
-  // 데이터를 가져와서 페이지 초기화
-  async function loadData() {
-    try {
-      const response = await fetch(PRODUCT_DATA_URL);
-      const data = await response.json();
-      PRODUCTS = data;
-      
-      document.getElementById('loading-overlay').style.display = 'none';
-      document.getElementById('floatingSubmitBtn').disabled = false;
-      document.getElementById('floatingSubmitBtn').textContent = '주문 제출';
-      
-      // 카테고리별로 빈 줄 하나씩 생성
-      ['beans', 'drip', 'cup', 'etc'].forEach(cat => addRow(cat));
-    } catch (e) {
-      console.error(e);
-      document.getElementById('loading-overlay').textContent = "품목 로딩 실패. 새로고침 해주세요.";
-    }
-  }
-
-  function makeSelect(list) {
-    const s = document.createElement('select');
-    s.className = 'control item-select';
-    list.forEach(v => {
-      const o = document.createElement('option');
-      o.value = v; o.textContent = v;
-      s.appendChild(o);
-    });
-    // 직접입력 옵션 추가
-    const opt = document.createElement('option');
-    opt.value = "직접입력"; opt.textContent = "직접입력 (목록에 없음)";
-    s.appendChild(opt);
-    return s;
-  }
-
-  function addRow(category) {
-    const tbody = document.getElementById(`tbody-${category}`);
-    const tr = document.createElement('tr');
-    
-    // 제품 셀
-    const tdItem = document.createElement('td');
-    tdItem.className = 'item-cell';
-    const sel = makeSelect(PRODUCTS[category] || []);
-    const custom = document.createElement('input');
-    custom.className = 'control item-custom';
-    custom.placeholder = '제품명을 직접 입력하세요';
-    tdItem.append(sel, custom);
-
-    // 수량 셀
-    const tdQty = document.createElement('td');
-    tdQty.innerHTML = `
-      <div class="qty-container">
-        <button type="button" class="qty-btn minus">-</button>
-        <input type="number" class="qty-input" value="0" min="0">
-        <button type="button" class="qty-btn plus">+</button>
-      </div>`;
-    
-    // 삭제 셀
-    const tdDel = document.createElement('td');
-    tdDel.innerHTML = `<button type="button" class="btn btn-danger">삭제</button>`;
-
-    tr.append(tdItem, tdQty, tdDel);
-    tbody.appendChild(tr);
-
-    // 이벤트 연결
-    sel.onchange = () => { custom.style.display = sel.value === '직접입력' ? 'block' : 'none'; };
-    const input = tdQty.querySelector('.qty-input');
-    tdQty.querySelector('.minus').onclick = () => { if(input.value > 0) { input.value--; updateTotal(); } };
-    tdQty.querySelector('.plus').onclick = () => { input.value++; updateTotal(); };
-    input.oninput = updateTotal;
-    tdDel.querySelector('.btn-danger').onclick = () => { tr.remove(); updateTotal(); };
-    
-    updateTotal();
-  }
-
-  function updateTotal() {
-    let totalAll = 0;
-    ['beans', 'drip', 'cup', 'etc'].forEach(cat => {
-      let catTotal = 0;
-      document.querySelectorAll(`#tbody-${cat} .qty-input`).forEach(i => catTotal += parseInt(i.value || 0));
-      document.getElementById(`qty-${cat}`).textContent = `수량: ${catTotal}개`;
-      totalAll += catTotal;
-    });
-    document.getElementById('totalQtyText').textContent = `총 수량: ${totalAll}개`;
-    document.getElementById('floatingTotal').textContent = `총 ${totalAll}개`;
-  }
-
-  // 추가 버튼들 이벤트
-  document.querySelectorAll('.add-row-btn').forEach(btn => {
-    btn.onclick = () => addRow(btn.dataset.category);
-  });
-
-  // 제출 기능
-  document.getElementById('floatingSubmitBtn').onclick = async () => {
-    const company = document.getElementById('company').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    if(!company || !phone) return alert("매장명과 연락처를 입력해주세요.");
-
-    const items = [];
-    document.querySelectorAll('tbody tr').forEach(tr => {
-      const qty = parseInt(tr.querySelector('.qty-input').value);
-      if(qty > 0) {
-        const sel = tr.querySelector('.item-select');
-        const name = sel.value === '직접입력' ? tr.querySelector('.item-custom').value : sel.value;
-        items.push({ item: name, qty: qty });
-      }
-    });
-
-    if(items.length === 0) return alert("주문할 품목을 선택하세요.");
-
-    const btn = document.getElementById('floatingSubmitBtn');
-    btn.disabled = true; btn.textContent = "제출 중...";
-
-    // 폼 전송
-    const form = document.createElement('form');
-    form.method = 'POST'; form.action = WEB_APP_URL; form.target = '_blank';
-    const input = document.createElement('input');
-    input.type = 'hidden'; input.name = 'data';
-    input.value = JSON.stringify({ company, phone, request: document.getElementById('request').value, items });
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-    
-    alert("주문이 제출되었습니다. 결과 창을 확인하세요.");
-    location.reload();
-  };
-
-  loadData();
-});
-</script>
-</body>
-</html>
+  <div class="category-section">
+    <div class="category-title">기타</div>
+    <div class="table-wrap"><table><tbody id="tbody-etc"></tbody></table></div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
+      <button type="button" class="btn btn-secondary add-row-btn" data-category="etc">+ 품목 추가</button>
+      <span class="category-qty" id="qty-etc">수량: 0개</span>
+    </div>
+  </div>
+</div>
